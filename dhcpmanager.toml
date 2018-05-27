@@ -9,6 +9,9 @@ interface = "eth0"
 # Create virtual interfaces for each IP
 manage-interfaces = true
 
+# Assign obtained IPs to virtual interfaces
+assign-interfaces = false
+
 # Virtual interfaces MAC address pool
 macs = [
   "56:6A:E2:0B:01:8D",
