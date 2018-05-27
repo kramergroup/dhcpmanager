@@ -16,15 +16,17 @@ type DHCPController struct {
 	timeout          time.Duration
 	clients          map[string]*dhclient.Client
 	manageInterfaces bool
+	assignInterfaces bool
 }
 
 // NewDHCPController creates a new DHCPController for an interface
-func NewDHCPController(iface string, timeout time.Duration, manageInterfaces bool) *DHCPController {
+func NewDHCPController(iface string, timeout time.Duration, manageInterfaces, assignInterfaces bool) *DHCPController {
 	c := DHCPController{
 		timeout:          timeout,
 		clients:          make(map[string]*dhclient.Client),
 		manageInterfaces: manageInterfaces,
 		iface:            iface,
+		assignInterfaces: assignInterfaces,
 	}
 	return &c
 }
@@ -56,7 +58,9 @@ func (c *DHCPController) BindAllocationToInterface(allocation *Allocation, iface
 			client.Stop()
 			return nil, errors.New("IP address already managed")
 		}
-		c.associateLeasewithDevice(lease, iface)
+		if c.assignInterfaces {
+			c.associateLeasewithDevice(lease, iface)
+		}
 		c.clients[lease.FixedAddress.String()] = &client
 		return lease, nil
 	case <-time.After(c.timeout):

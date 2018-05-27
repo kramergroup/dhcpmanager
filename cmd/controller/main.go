@@ -56,6 +56,11 @@ type Configuration struct {
 	// At the moment, MACs are generated randomnly
 	ManageInterfaces bool `mapstructure:"manage-interfaces"`
 
+	// If true, the controller adds the received IP to the interface. If used
+	// in conjunction with a load-balancer, this is usually not what is required
+	// as it is the load-balancers job to setup routing.
+	AssignInterfaces bool `mapstructure:"assign-interfaces"`
+
 	// The MAC addresses that will be used to obtain unique IPs from the DHCP
 	// server if ManageInterfaces = true
 	// If manage-interfaces is set to true, the list of MACs defines the total
@@ -69,7 +74,7 @@ func main() {
 	config := processConfiguration()
 
 	// Start Controller and Manager
-	dhcp := dhcpmanager.NewDHCPController(config.Interface, config.ClientTimeout, config.ManageInterfaces)
+	dhcp := dhcpmanager.NewDHCPController(config.Interface, config.ClientTimeout, config.ManageInterfaces, config.AssignInterfaces)
 	sm, err := dhcpmanager.NewStateManager(config.Etcd, config.DialTimeout, config.RequestTimeout)
 	if err == nil {
 
@@ -122,6 +127,7 @@ func processConfiguration() *Configuration {
 	viper.SetDefault("request-timeout", "10s")
 	viper.SetDefault("client-timeout", "5s")
 	viper.SetDefault("manage-interfaces", true)
+	viper.SetDefault("assign-interfaces", false)
 
 	// Find and read the config file
 	if err := viper.ReadInConfig(); err != nil {
