@@ -1,0 +1,23 @@
+# Sample configuration for dhcpmanager
+
+# Etcd endpoints
+etcd = [ "etcd:2379" ]
+
+# The network interface used to send DHCP packages
+interface = "eth0"
+
+# Create virtual interfaces for each IP
+manage-interfaces = true
+
+# Virtual interfaces MAC address pool
+macs = [
+  "56:6A:E2:0B:01:8D",
+  "30:BA:33:C2:E3:C2",
+  "22:67:23:92:3B:E4",
+  "1A:50:7E:59:2C:E6",
+  "56:2A:14:16:8A:F7",
+  "A2:BD:5E:FD:9D:37",
+  "84:EB:41:CF:71:48",
+  "02:AD:FE:CC:AE:6E",
+  "16:46:05:E0:6D:CE",
+]

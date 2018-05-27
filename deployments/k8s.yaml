@@ -1,0 +1,149 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dhcpmanager-config
+  namespace: metallb-system
+  labels:
+    app: dhcpmanager
+data:
+  dhcpmanager.toml: |
+    etcd = ["etcd:2379"]
+    manage-interfaces = true
+    interface = "bond1"
+    cidrs = ["172.58.52.0/24", "172.58.53.0/24"]
+    port = 8000
+    macs = [
+      "56:6A:E2:0B:01:8D",
+      "30:BA:33:C2:E3:C2",
+      "22:67:23:92:3B:E4",
+      "1A:50:7E:59:2C:E6",
+      "56:2A:14:16:8A:F7",
+      "A2:BD:5E:FD:9D:37",
+      "84:EB:41:CF:71:48",
+      "02:AD:FE:CC:AE:6E",
+      "16:46:05:E0:6D:CE",
+    ]
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: dhcpmanager-controller
+  namespace: metallb-system
+  labels:
+    app: dhcpmanager
+    component: controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dhcpmanager
+      component: controller
+  template:
+    metadata:
+      labels:
+        app: dhcpmanager
+        component: controller
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: controller
+        image: kramergroup/dhcpmanager-controller
+        volumeMounts:
+        - name: config
+          mountPath: /etc/dhcpmanager
+        securityContext:
+          privileged: true
+      volumes:
+      - name: config
+        configMap:
+          name: dhcpmanager-config
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: dhcpmanager-apiserver
+  namespace: metallb-system
+  labels:
+    app: dhcpmanager
+    component: apiserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dhcpmanager
+      component: apiserver
+  template:
+    metadata:
+      labels:
+        app: dhcpmanager
+        component: apiserver
+    spec:
+      containers:
+      - name: apiserver
+        image: kramergroup/dhcpmanager-apiserver
+        ports:
+        - containerPort: 8000
+          name: html
+        volumeMounts:
+        - name: config
+          mountPath: /etc/dhcpmanager
+      volumes:
+      - name: config
+        configMap:
+          name: dhcpmanager-config
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: dhcpmanager-etcd
+  namespace: metallb-system
+  labels:
+    app: dhcpmanager
+    component: etcd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dhcpmanager
+      component: etcd
+  template:
+    metadata:
+      labels:
+        app: dhcpmanager
+        component: etcd
+    spec:
+      containers:
+      - name: etcd
+        image: alfatraining/etcd3
+        ports:
+        - containerPort: 2379
+        - containerPort: 2380
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dhcpmanager
+  namespace: metallb-system
+spec:
+  selector:
+    app: dhcpmanager
+    component: apiserver
+  ports:
+  - name: html # Actually, no port is needed.
+    port: 80
+    targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd
+  namespace: metallb-system
+spec:
+  selector:
+    app: dhcpmanager
+    component: etcd
+  ports:
+  - name: html # Actually, no port is needed.
+    port: 2379
+    targetPort: 2379
