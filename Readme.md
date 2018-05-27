@@ -17,7 +17,7 @@ The service provides a restful API for managing IPs:
 | ------------ | ------ | ---------------------------------- | --------------------------------------------------------------------------- |
 | `/v1/config` | GET    |                                    | Obtain service configuration (incl. the CIDR ranges covered by the service) |
 | `/v1/status` | GET    |                                    | Obtain service status (not used in metallb)                                 |
-| `/v1/ip`     | POST   | `{"service":"namespace/svc-name"}` | Request a new IP for `service`                                              |
+| `/v1/ip`     | POST   | `{"service":"namespace/svc"}` | Request a new IP for `service`                                              |
 |              | DELETE | `{"ip":"xxx.xxx.xxx.xxx"}`         | Return an IP                                                                |
 | `/v1/mac`    | POST   | `{"macs":["xx.xx.xx.xx.xx.xx"]`    | Provide a list of hardware addresses to use                                 |
 |              | DELETE | `{"macs":["xx.xx.xx.xx.xx.xx"]`    | Remove a list of hardware addresses from usage                              |  
