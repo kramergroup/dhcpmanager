@@ -1,4 +1,0 @@
-FROM alpine:latest
-
-COPY /bin/controller /controller
-CMD ["/controller"]

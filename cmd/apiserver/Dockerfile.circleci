@@ -1,4 +1,0 @@
-FROM alpine:latest
-
-COPY bin/apiserver /apiserver
-CMD ["/apiserver"]
