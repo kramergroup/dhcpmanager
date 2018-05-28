@@ -36,20 +36,16 @@ jobs:
       - image: docker:17.05.0-ce-git
     working_directory: /go/src/github.com/kramergroup/dhcpmanager
     steps:
-      - attach_workspace:
-          at: bin
       - checkout
+      - setup_remote_docker
       - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-      - run: docker build -f cmd/apiserver/Dockerfile.circleci -t kramergroup/dhcpmanager-apiserver
+      - run: docker build -f cmd/apiserver/Dockerfile -t kramergroup/dhcpmanager-apiserver
       - run: docker push kramergroup/dhcpmanager-apiserver
-      - run: docker build -f cmd/controller/Dockerfile.circleci -t kramergroup/dhcpmanager-controller
+      - run: docker build -f cmd/controller/Dockerfile -t kramergroup/dhcpmanager-controller
       - run: docker push kramergroup/dhcpmanager-controller
 
 workflows:
   version: 2
   build-n-deploy:
     jobs:
-      - build-apiserver
-      - build-controller
       - deploy-container
-  
