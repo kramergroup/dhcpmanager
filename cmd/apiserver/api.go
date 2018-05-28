@@ -59,12 +59,6 @@ type removeMACRequestResponse struct {
 	Unprocessed []string
 }
 
-// configurationRequestResponse is send in response to a configuration request
-// The endpoint communicates its current configuration
-type configurationRequestResponse struct {
-	CIDRs []string `json:"cidrs"` // Array of CIDR nets controlled by the endpoint
-}
-
 type statusRequestResponse struct {
 	Allocations   []*dhcpmanager.Allocation
 	AvailableMACs []string

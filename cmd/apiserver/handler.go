@@ -154,16 +154,6 @@ func removeMACs(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func returnConfiguration(w http.ResponseWriter, r *http.Request) {
-	conf := configurationRequestResponse{
-		CIDRs: configuration.Cidrs,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(conf)
-	log.Printf("API: configuration request from %s", r.RemoteAddr)
-}
-
 func returnStatus(w http.ResponseWriter, r *http.Request) {
 	allocations, _ := sm.Allocations()
 	macs, _ := sm.MACPool()

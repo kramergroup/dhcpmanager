@@ -59,10 +59,6 @@ func ListenAndServe() {
 		removeMACs).Methods(apiEndpointRemoveMAC.Method)
 
 	router.HandleFunc(
-		fmt.Sprintf(apiEndpointConfiguration.TemplateURL, ""),
-		returnConfiguration).Methods(apiEndpointConfiguration.Method)
-
-	router.HandleFunc(
 		fmt.Sprintf(apiEndpointStatus.TemplateURL, ""),
 		returnStatus).Methods(apiEndpointStatus.Method)
 
