@@ -115,7 +115,6 @@ func (c *DHCPController) CreateDevice(ifName string, mac *net.HardwareAddr) (*ne
 		ParentIndex: parent.Attrs().Index,
 	}
 
-	log.Printf("MAC address: %s", mac)
 	if mac != nil {
 		la.HardwareAddr = *mac
 	}

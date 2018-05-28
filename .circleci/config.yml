@@ -25,15 +25,30 @@ jobs:
     steps:
       - checkout
       - run: go get -v -t -d ./...
-      - run: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v -o /go/bin/controller github.com/kramergroup/dhcpmanager/cmd/controller 
+      - run: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v -o /go/bin/controller github.com/kramergroup/dhcpmanager/cmd/controller
       - persist_to_workspace:
           root: /go
           paths:
             - bin
 
+  deploy:
+    docker:
+      - image: docker:17.05.0-ce-git
+    working_directory: /go/src/github.com/kramergroup/dhcpmanager
+    steps:
+      - attach_workspace:
+          at: bin
+      - checkout
+      - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - run: docker build -f cmd/apiserver/Dockerfile.circleci -t kramergroup/dhcpmanager-apiserver
+      - run: docker push kramergroup/dhcpmanager-apiserver
+      
 workflows:
   version: 2
   build-all:
     jobs:
       - build-apiserver
       - build-controller
+  deploy:
+    - requires:
+      - build-all

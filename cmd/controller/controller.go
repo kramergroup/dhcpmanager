@@ -13,18 +13,20 @@ import (
 
 // Controller handles state changes to DHCP leases
 type Controller struct {
-	sm               *dhcpmanager.StateManager
-	dhcp             *dhcpmanager.DHCPController
-	watchStopFunc    func()
-	createInterfaces bool
+	sm                *dhcpmanager.StateManager
+	dhcp              *dhcpmanager.DHCPController
+	watchStopFunc     func()
+	createInterfaces  bool
+	dynamicInterfaces bool
 }
 
 // NewController creates a new controller
-func NewController(stateManager *dhcpmanager.StateManager, client *dhcpmanager.DHCPController, manageInterfaces bool) *Controller {
+func NewController(stateManager *dhcpmanager.StateManager, client *dhcpmanager.DHCPController, manageInterfaces, dynamicInterfaces bool) *Controller {
 	c := Controller{
-		sm:               stateManager,
-		dhcp:             client,
-		createInterfaces: manageInterfaces,
+		sm:                stateManager,
+		dhcp:              client,
+		createInterfaces:  manageInterfaces,
+		dynamicInterfaces: dynamicInterfaces,
 	}
 	return &c
 }
@@ -99,8 +101,11 @@ func (c *Controller) processUnboundAllocation(allocation *dhcpmanager.Allocation
 		ifName := fmt.Sprintf("vf-%s", randomString(6))
 		mac, err := c.sm.PopMAC()
 		if err != nil {
-			log.Print("Warning: No valid MAC address")
-			return
+			if !c.dynamicInterfaces {
+				log.Print("Warning: No valid MAC address")
+				return
+			}
+			mac = nil // causes randomn MAC generation in dhclient
 		}
 		iface, err = c.dhcp.CreateDevice(ifName, &mac)
 		if err != nil {
@@ -132,6 +137,8 @@ func (c *Controller) processUnboundAllocation(allocation *dhcpmanager.Allocation
 		log.Printf("Warning: Error persisting allocation for IP %s = %s", lease.FixedAddress.String(), err.Error())
 	}
 
+	log.Printf("Allocation %s bound to interface %s with IP %s (%s)",
+		allocation.ID, allocation.Interface.Name, allocation.Lease.FixedAddress, allocation.Hostname)
 }
 
 func (c *Controller) processStoppedAllocation(allocation *dhcpmanager.Allocation) {

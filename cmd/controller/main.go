@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/kramergroup/dhcpmanager"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/kramergroup/dhcpmanager"
 
 	"github.com/spf13/viper"
 )
@@ -52,20 +53,29 @@ type Configuration struct {
 	// picked up by the virtual interfaces. If an IP expires or is returned,
 	// the associated virtual interface is returned.
 	//
-	// TODO: Implement a way to provide a stack of MAC addresses to draw from.
-	// At the moment, MACs are generated randomnly
+	// Default: true
 	ManageInterfaces bool `mapstructure:"manage-interfaces"`
 
 	// If true, the controller adds the received IP to the interface. If used
 	// in conjunction with a load-balancer, this is usually not what is required
 	// as it is the load-balancers job to setup routing.
+	//
+	// Default: false
 	AssignInterfaces bool `mapstructure:"assign-interfaces"`
 
 	// The MAC addresses that will be used to obtain unique IPs from the DHCP
 	// server if ManageInterfaces = true
 	// If manage-interfaces is set to true, the list of MACs defines the total
-	// size of the IP pool available.
+	// size of the IP pool available unless dynamic-interfaces is true
 	Macs []string
+
+	// Dynamic interfaces allows to generate randomn hardware MAC addresses as
+	// needed. This has the advantage that the pool of IP is essentially infinite.
+	// Some environments use the MAC to enforce security rules. In these circumstances,
+	// randomn MACs should not be used.
+	//
+	// Default: false
+	DynamicInterfaces bool `mapstructure:"dynamic-interfaces"`
 }
 
 func main() {
@@ -74,7 +84,8 @@ func main() {
 	config := processConfiguration()
 
 	// Start Controller and Manager
-	dhcp := dhcpmanager.NewDHCPController(config.Interface, config.ClientTimeout, config.ManageInterfaces, config.AssignInterfaces)
+	dhcp := dhcpmanager.NewDHCPController(config.Interface,
+		config.ClientTimeout, config.ManageInterfaces, config.AssignInterfaces)
 	sm, err := dhcpmanager.NewStateManager(config.Etcd, config.DialTimeout, config.RequestTimeout)
 	if err == nil {
 
@@ -95,7 +106,7 @@ func main() {
 		}
 
 		// Start the main controller syncing state with DHCP clients
-		controller = NewController(sm, dhcp, config.ManageInterfaces)
+		controller = NewController(sm, dhcp, config.ManageInterfaces, config.DynamicInterfaces)
 		log.Print("Controller: starting")
 		controller.Start()
 
@@ -128,6 +139,7 @@ func processConfiguration() *Configuration {
 	viper.SetDefault("client-timeout", "5s")
 	viper.SetDefault("manage-interfaces", true)
 	viper.SetDefault("assign-interfaces", false)
+	viper.SetDefault("dynamic-interfaces", false)
 
 	// Find and read the config file
 	if err := viper.ReadInConfig(); err != nil {
@@ -139,13 +151,15 @@ func processConfiguration() *Configuration {
 		log.Fatalf("Configuration error: %s", err.Error())
 	}
 
-	log.Printf("[config]         interface: %s", config.Interface)
-	log.Printf("[config] manage-interfaces: %t", config.ManageInterfaces)
-	log.Printf("[config]     MAC pool size: %d", len(config.Macs))
-	log.Printf("[config]              etcd: %s", config.Etcd)
-	log.Printf("[config]    client-timeout: %s", config.ClientTimeout)
-	log.Printf("[config]   request-timeout: %s", config.RequestTimeout)
-	log.Printf("[config]      dial-timeout: %s", config.DialTimeout)
+	log.Printf("[config]          interface: %s", config.Interface)
+	log.Printf("[config]  manage-interfaces: %t", config.ManageInterfaces)
+	log.Printf("[config]  assign-interfaces: %t", config.AssignInterfaces)
+	log.Printf("[config] dynamic-interfaces: %t", config.DynamicInterfaces)
+	log.Printf("[config]      MAC pool size: %d", len(config.Macs))
+	log.Printf("[config]               etcd: %s", config.Etcd)
+	log.Printf("[config]     client-timeout: %s", config.ClientTimeout)
+	log.Printf("[config]    request-timeout: %s", config.RequestTimeout)
+	log.Printf("[config]       dial-timeout: %s", config.DialTimeout)
 
 	return &config
 }
