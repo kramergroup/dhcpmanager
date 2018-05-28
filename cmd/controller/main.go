@@ -91,8 +91,8 @@ func main() {
 
 		// Register the MAC addresses
 		for _, mac := range config.Macs {
-			mmac, err := net.ParseMAC(mac)
-			if err != nil {
+			mmac, errB := net.ParseMAC(mac)
+			if errB != nil {
 				log.Printf("Invalid MAC address [%s]", mac)
 				continue
 			}
