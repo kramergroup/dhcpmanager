@@ -52,6 +52,6 @@ workflows:
       - build-apiserver
       - build-controller
       - deploy
-        - requires:
-          - build-apiserver
-          - build-controller
+        requires:
+        - build-apiserver
+        - build-controller
