@@ -39,9 +39,9 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-      - run: docker build -f cmd/apiserver/Dockerfile -t kramergroup/dhcpmanager-apiserver
+      - run: docker build -f cmd/apiserver/Dockerfile -t kramergroup/dhcpmanager-apiserver .
       - run: docker push kramergroup/dhcpmanager-apiserver
-      - run: docker build -f cmd/controller/Dockerfile -t kramergroup/dhcpmanager-controller
+      - run: docker build -f cmd/controller/Dockerfile -t kramergroup/dhcpmanager-controller .
       - run: docker push kramergroup/dhcpmanager-controller
 
 workflows:
