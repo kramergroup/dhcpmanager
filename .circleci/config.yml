@@ -47,7 +47,7 @@ jobs:
 
 workflows:
   version: 2
-  deploy:
+  build-n-deploy:
     jobs:
       - build-apiserver
       - build-controller
