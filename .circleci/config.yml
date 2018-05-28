@@ -11,7 +11,7 @@ jobs:
     steps:
       - checkout
       - run: go get -v -t -d ./...
-      - run: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v github.com/kramergroup/dhcpmanager/cmd/apiserver -o /go/bin/apiserver
+      - run: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v -o /go/bin/apiserver github.com/kramergroup/dhcpmanager/cmd/apiserver
       - persist_to_workspace:
           root: /go
           paths:
@@ -25,7 +25,7 @@ jobs:
     steps:
       - checkout
       - run: go get -v -t -d ./...
-      - run: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v github.com/kramergroup/dhcpmanager/cmd/controller -o /go/bin/controller
+      - run: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v -o /go/bin/controller github.com/kramergroup/dhcpmanager/cmd/controller 
       - persist_to_workspace:
           root: /go
           paths:
