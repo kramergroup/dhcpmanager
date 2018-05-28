@@ -31,7 +31,7 @@ jobs:
           paths:
             - bin
 
-  deploy:
+  deploy-container:
     docker:
       - image: docker:17.05.0-ce-git
     working_directory: /go/src/github.com/kramergroup/dhcpmanager
@@ -51,7 +51,7 @@ workflows:
     jobs:
       - build-apiserver
       - build-controller
-      - deploy
+      - deploy-container
         requires:
         - build-apiserver
         - build-controller
