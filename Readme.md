@@ -105,6 +105,34 @@ macs = [
 ]
 ```
 
+### Avoiding secondary IPs
+
+If your system is setup to automatically obtain IPs for network interfaces, you
+might obtain a second IP address, because the system-wide DHCP client requests
+one as soon as the interface is created. This can be avoided by configuring
+the system to not use DHCP for interfaces that are named `vf-*`. How this is achieved
+depends on your system.
+
+#### Systemd
+
+A `systemd`-based OS can be configured by adding a `network` file for the `vf-*` interfaces.
+
+Create a file `/etc/systemd/network/30-vf.network` (or similarly named) with content
+
+```
+[Match]
+Name=vf-*
+
+[Network]
+DHCP=no
+```
+
+and restart the network daemon:
+
+```bash
+systemctl restart systemd-networkd
+```
+
 ## Status
 
 This code is functional, but not widely tested. We mainly use it for our own small-scale
