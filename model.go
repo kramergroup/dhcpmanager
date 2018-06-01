@@ -105,6 +105,9 @@ type StateManager interface {
 	// MacPool returns a list of all available MAC addresses
 	MACPool() ([]string, error)
 
+	// PutMAC adds a new MAC to the pool of available MAC addresses
+	PutMAC(mac net.HardwareAddr) error
+
 	// RemoveMAC removes a MAC address from the pool of available MAC addresses
 	RemoveMAC(mac net.HardwareAddr) error
 

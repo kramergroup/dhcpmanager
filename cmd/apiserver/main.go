@@ -22,7 +22,7 @@ type Configuration struct {
 }
 
 var configuration Configuration
-var sm *dhcpmanager.StateManager
+var sm dhcpmanager.StateManager
 
 // our main function
 func main() {
