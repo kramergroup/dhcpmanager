@@ -13,7 +13,7 @@ import (
 
 // Controller handles state changes to DHCP leases
 type Controller struct {
-	sm                *dhcpmanager.StateManager
+	sm                dhcpmanager.StateManager
 	dhcp              *dhcpmanager.DHCPController
 	watchStopFunc     func()
 	createInterfaces  bool
@@ -21,9 +21,9 @@ type Controller struct {
 }
 
 // NewController creates a new controller
-func NewController(stateManager *dhcpmanager.StateManager, client *dhcpmanager.DHCPController, manageInterfaces, dynamicInterfaces bool) *Controller {
+func NewController(StateManager dhcpmanager.StateManager, client *dhcpmanager.DHCPController, manageInterfaces, dynamicInterfaces bool) *Controller {
 	c := Controller{
-		sm:                stateManager,
+		sm:                StateManager,
 		dhcp:              client,
 		createInterfaces:  manageInterfaces,
 		dynamicInterfaces: dynamicInterfaces,
