@@ -51,7 +51,69 @@ type AllocationWatcher struct {
 }
 
 // StateManager manages the application state
-type StateManager struct {
+// It is the central data management object of the application
+// It's responsibilities include:
+// 	- Management of indices
+//  - Allocation management
+//  - MAC table management
+type StateManager interface {
+
+	// Lifecycle management
+	// --------------------
+
+	// MaintainIndices maintains integrity of the data indices such as
+	// the available MAC table
+	MaintainIndices()
+
+	// Stop stops all life-cycle threads
+	Stop()
+
+	// State Watcher
+	// -------------
+
+	// WatchAllocation watches the state of a specific allocation. The function
+	// returns a stop function that should be called as soon as the watcher is
+	// not needed anymore
+	WatchAllocation(allocationID uuid.UUID, watcher *AllocationWatcher) func()
+
+	// Watch watches all allocations. The function
+	// returns a stop function that should be called as soon as the watcher is
+	// not needed anymore
+	Watch(watcher *AllocationWatcher) func()
+
+	// Allocation Management
+	// ---------------------
+
+	// Put persists an allocation
+	Put(allocation *Allocation) error
+
+	// Remove deletes an allocation
+	Remove(allocation *Allocation) error
+
+	// Allocations returns a list of all allocations
+	Allocations() ([]*Allocation, error)
+
+	// Get returns the allocation with id
+	Get(id uuid.UUID) (*Allocation, error)
+
+	// GetByIP returns the allocation assigned to ip
+	GetByIP(ip *net.IP) (*Allocation, error)
+
+	// MAC table management
+	// --------------------
+
+	// MacPool returns a list of all available MAC addresses
+	MACPool() ([]string, error)
+
+	// RemoveMAC removes a MAC address from the pool of available MAC addresses
+	RemoveMAC(mac net.HardwareAddr) error
+
+	// PopMAC take a MAC out of the pool and returns it
+	PopMAC() (net.HardwareAddr, error)
+}
+
+// stateManager implements the StateManager interface
+type stateManager struct {
 
 	// Etcd3 kv
 	kv             clientv3.KV
@@ -72,9 +134,9 @@ func NewAllocation(hostname string) *Allocation {
 }
 
 // NewStateManager creates a new etcd3-backed application state
-func NewStateManager(etcdEndpoints []string, dialTimeout, requestTimeout time.Duration) (*StateManager, error) {
+func NewStateManager(etcdEndpoints []string, dialTimeout, requestTimeout time.Duration) (StateManager, error) {
 
-	sm := StateManager{
+	sm := stateManager{
 		stopChan:       make([]chan interface{}, 0),
 		requestTimeout: requestTimeout,
 	}
@@ -93,7 +155,7 @@ func NewStateManager(etcdEndpoints []string, dialTimeout, requestTimeout time.Du
 }
 
 // MaintainIndices watches the state and ensures consistency of indices
-func (s *StateManager) MaintainIndices() {
+func (s *stateManager) MaintainIndices() {
 
 	updateIndex := func(a *Allocation) {
 		// Update IP->Allocation.ID lookup table
@@ -132,7 +194,7 @@ func (s *StateManager) MaintainIndices() {
 }
 
 // Stop closes the etcd connection backing State
-func (s *StateManager) Stop() {
+func (s *stateManager) Stop() {
 	for _, c := range s.stopChan {
 		c <- true
 	}
@@ -140,7 +202,7 @@ func (s *StateManager) Stop() {
 }
 
 // WatchAllocation watches state changes of the allocation with the given ID
-func (s *StateManager) WatchAllocation(allocationID uuid.UUID, watcher *AllocationWatcher) func() {
+func (s *stateManager) WatchAllocation(allocationID uuid.UUID, watcher *AllocationWatcher) func() {
 	stopChan := make(chan interface{})
 	s.stopChan = append(s.stopChan, stopChan)
 	ctx := context.Background()
@@ -161,7 +223,7 @@ func (s *StateManager) WatchAllocation(allocationID uuid.UUID, watcher *Allocati
 
 // Watch uses the supplied AllocationWatcher to watch leases. It returns a function
 // that can be used to stop the AllocationWatcher
-func (s *StateManager) Watch(watcher *AllocationWatcher) func() {
+func (s *stateManager) Watch(watcher *AllocationWatcher) func() {
 	stopChan := make(chan interface{})
 	s.stopChan = append(s.stopChan, stopChan)
 	ctx := context.Background()
@@ -179,7 +241,7 @@ func (s *StateManager) Watch(watcher *AllocationWatcher) func() {
 	return stopFunc
 }
 
-func (s *StateManager) watchChannel(watchChan clientv3.WatchChan, stopChan chan interface{}, watcher *AllocationWatcher) {
+func (s *stateManager) watchChannel(watchChan clientv3.WatchChan, stopChan chan interface{}, watcher *AllocationWatcher) {
 	for true {
 		select {
 		case w := <-watchChan:
@@ -212,7 +274,7 @@ func (s *StateManager) watchChannel(watchChan clientv3.WatchChan, stopChan chan 
 }
 
 // Put a lease into the state store
-func (s *StateManager) Put(allocation *Allocation) error {
+func (s *stateManager) Put(allocation *Allocation) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), s.requestTimeout)
 	defer cancel()
@@ -257,7 +319,7 @@ func (s *StateManager) Put(allocation *Allocation) error {
 }
 
 // Remove removes an Allocation from the KV store
-func (s *StateManager) Remove(allocation *Allocation) error {
+func (s *stateManager) Remove(allocation *Allocation) error {
 	ctx, cancel := context.WithTimeout(context.Background(), s.requestTimeout)
 	defer cancel()
 
@@ -280,7 +342,7 @@ func (s *StateManager) Remove(allocation *Allocation) error {
 }
 
 // Allocations returns an iterator over all allocations
-func (s *StateManager) Allocations() ([]*Allocation, error) {
+func (s *stateManager) Allocations() ([]*Allocation, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), s.requestTimeout)
 	defer cancel()
@@ -305,7 +367,7 @@ func (s *StateManager) Allocations() ([]*Allocation, error) {
 
 // Get returns the allocation with ID. An error results from requesting the allocation
 // of an unknown ID
-func (s *StateManager) Get(id uuid.UUID) (*Allocation, error) {
+func (s *stateManager) Get(id uuid.UUID) (*Allocation, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), s.requestTimeout)
 	defer cancel()
@@ -334,7 +396,7 @@ func encode(allocation *Allocation) []byte {
 }
 
 // GetByIP returns the allocation by IP
-func (s *StateManager) GetByIP(ip *net.IP) (*Allocation, error) {
+func (s *stateManager) GetByIP(ip *net.IP) (*Allocation, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), s.requestTimeout)
 	defer cancel()
@@ -358,7 +420,7 @@ func (s *StateManager) GetByIP(ip *net.IP) (*Allocation, error) {
 }
 
 // MACPool returns a list of available MAC addresses
-func (s *StateManager) MACPool() ([]string, error) {
+func (s *stateManager) MACPool() ([]string, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), s.requestTimeout)
 	defer cancel()
@@ -377,7 +439,7 @@ func (s *StateManager) MACPool() ([]string, error) {
 }
 
 // PutMAC puts a MAC into the pool of available MAC addresses
-func (s *StateManager) PutMAC(mac net.HardwareAddr) error {
+func (s *stateManager) PutMAC(mac net.HardwareAddr) error {
 
 	if len(mac) == 0 {
 		return fmt.Errorf("Empty MAC")
@@ -411,7 +473,7 @@ func (s *StateManager) PutMAC(mac net.HardwareAddr) error {
 }
 
 // RemoveMAC removes a MAC from the pool
-func (s *StateManager) RemoveMAC(mac net.HardwareAddr) error {
+func (s *stateManager) RemoveMAC(mac net.HardwareAddr) error {
 	amac := strings.ToLower(mac.String())
 
 	ctx, cancel := context.WithTimeout(context.Background(), s.requestTimeout)
@@ -423,7 +485,7 @@ func (s *StateManager) RemoveMAC(mac net.HardwareAddr) error {
 }
 
 // PopMAC retrieves a MAC from the pool of available MAC addresses
-func (s *StateManager) PopMAC() (net.HardwareAddr, error) {
+func (s *stateManager) PopMAC() (net.HardwareAddr, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), s.requestTimeout)
 	defer cancel()
 
