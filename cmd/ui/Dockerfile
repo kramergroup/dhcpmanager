@@ -6,7 +6,7 @@ RUN go get github.com/gorilla/mux github.com/gorilla/websocket \
 
 # Copy sources in
 COPY . /go/src/github.com/kramergroup/dhcpmanager
-WORKDIR /go/src/github.com/kramergroup/dhcpmanager/cmd/backend
+WORKDIR /go/src/github.com/kramergroup/dhcpmanager/cmd/ui/backend
 
 RUN go get
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /go/bin/backend .
