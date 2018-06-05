@@ -1,7 +1,7 @@
 FROM node:latest as ui-builder
 
 RUN npm install -g create-react-app && \
-		npm isntall -g react && \
+		npm install -g react && \
 		npm install -g @material-ui/core && \
 		npm install -g d3
 
