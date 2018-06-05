@@ -15,8 +15,8 @@ jobs:
       - run: docker push kramergroup/dhcpmanager-apiserver
       - run: docker build -f cmd/controller/Dockerfile -t kramergroup/dhcpmanager-controller .
       - run: docker push kramergroup/dhcpmanager-controller
-      - run: docker build -f cmd/backend/Dockerfile -t kramergroup/dhcpmanager-ui-backend .
-      - run: docker push kramergroup/dhcpmanager-ui-backend
+      - run: docker build -f cmd/ui/Dockerfile -t kramergroup/dhcpmanager-ui .
+      - run: docker push kramergroup/dhcpmanager-ui
 
 workflows:
   version: 2

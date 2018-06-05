@@ -1,4 +1,4 @@
-FROM golang:latest as Builder
+FROM golang:latest as backend-builder
 
 # go get most dependencies before copying in the source to cache them
 RUN go get github.com/gorilla/mux github.com/gorilla/websocket \
@@ -11,7 +11,19 @@ WORKDIR /go/src/github.com/kramergroup/dhcpmanager/cmd/backend
 RUN go get
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /go/bin/backend .
 
+# ---------------------------------------------------------------------------------------------
+
+FROM mhart/alpine-node as ui-builder
+
+COPY ./cmd/ui/frontend /ui
+WORKDIR /ui
+
+RUN npm run build
+
+# ---------------------------------------------------------------------------------------------
+
 FROM alpine:latest
 
-COPY --from=builder /go/bin/backend /backend
-CMD ["/backend"]
+COPY --from=backend-builder /go/bin/backend /ui
+COPY --from=ui-builder /ui/build /static
+CMD ["/ui"]
