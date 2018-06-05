@@ -50,6 +50,12 @@ type AllocationWatcher struct {
 	OnModify func(*Allocation)
 }
 
+// MACPoolWatcher can be used to watch MAC pool events
+type MACPoolWatcher struct {
+	OnPop  func(net.HardwareAddr)
+	OnPush func(net.HardwareAddr)
+}
+
 // StateManager manages the application state
 // It is the central data management object of the application
 // It's responsibilities include:
@@ -80,6 +86,11 @@ type StateManager interface {
 	// returns a stop function that should be called as soon as the watcher is
 	// not needed anymore
 	Watch(watcher *AllocationWatcher) func()
+
+	// WatchMACPool watches the MAC pool. The function
+	// returns a stop function that should be called as soon as the watcher is
+	// not needed anymore
+	WatchMACPool(watcher *MACPoolWatcher) func()
 
 	// Allocation Management
 	// ---------------------
@@ -266,6 +277,52 @@ func (s *stateManager) watchChannel(watchChan clientv3.WatchChan, stopChan chan 
 					lease := decode(ev.PrevKv.Value)
 					if watcher.OnDelete != nil {
 						watcher.OnDelete(lease)
+					}
+				}
+			}
+		case <-stopChan:
+			// log.Print("State: watcher stopped")
+			return
+		}
+	}
+}
+
+func (s *stateManager) WatchMACPool(watcher *MACPoolWatcher) func() {
+	stopChan := make(chan interface{})
+	s.stopChan = append(s.stopChan, stopChan)
+	ctx := context.Background()
+
+	key := fmt.Sprintf("%s/macs", etcdPrefix)
+	watchChan := s.cli.Watch(ctx, key, clientv3.WithPrefix(), clientv3.WithPrevKV())
+
+	stopFunc := func() {
+		stopChan <- true
+	}
+
+	// Start a new thread and watch for changes in etcd
+	go s.watchMACPool(watchChan, stopChan, watcher)
+
+	return stopFunc
+}
+
+func (s *stateManager) watchMACPool(watchChan clientv3.WatchChan, stopChan chan interface{}, watcher *MACPoolWatcher) {
+	for true {
+		select {
+		case w := <-watchChan:
+			for _, ev := range w.Events {
+				//log.Printf("Watch event - Key version: %d, createRev: %d, modRev: %d", ev.Kv.Version, ev.Kv.CreateRevision, ev.Kv.ModRevision)
+				switch ev.Type {
+				case clientv3.EventTypePut:
+					mac, err := net.ParseMAC(string(ev.Kv.Key))
+					if err == nil && ev.IsCreate() {
+						if watcher.OnPush != nil {
+							watcher.OnPush(mac)
+						}
+					}
+				case clientv3.EventTypeDelete:
+					mac, err := net.ParseMAC(string(ev.Kv.Key))
+					if err == nil && watcher.OnPop != nil {
+						watcher.OnPop(mac)
 					}
 				}
 			}
