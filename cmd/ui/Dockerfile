@@ -1,3 +1,17 @@
+FROM node:latest as ui-builder
+
+RUN npm install -g create-react-app && \
+		npm isntall -g react && \
+		npm install -g @material-ui/core && \
+		npm install -g d3
+
+COPY ./cmd/ui/frontend /ui
+WORKDIR /ui
+
+RUN npm run build
+
+# ---------------------------------------------------------------------------------------------
+
 FROM golang:latest as backend-builder
 
 # go get most dependencies before copying in the source to cache them
@@ -10,15 +24,6 @@ WORKDIR /go/src/github.com/kramergroup/dhcpmanager/cmd/ui/backend
 
 RUN go get
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /go/bin/backend .
-
-# ---------------------------------------------------------------------------------------------
-
-FROM mhart/alpine-node as ui-builder
-
-COPY ./cmd/ui/frontend /ui
-WORKDIR /ui
-
-RUN npm install && npm run build
 
 # ---------------------------------------------------------------------------------------------
 
