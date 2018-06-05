@@ -3,34 +3,6 @@
 # Check https://circleci.com/docs/2.0/language-go/ for more details
 version: 2
 jobs:
-  build-apiserver:
-    docker:
-      - image: circleci/golang:1.9
-
-    working_directory: /go/src/github.com/kramergroup/dhcpmanager
-    steps:
-      - checkout
-      - run: go get -v -t -d ./...
-      - run: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v -o /go/bin/apiserver github.com/kramergroup/dhcpmanager/cmd/apiserver
-      - persist_to_workspace:
-          root: /go
-          paths:
-            - bin
-
-  build-controller:
-    docker:
-      - image: circleci/golang:1.9
-
-    working_directory: /go/src/github.com/kramergroup/dhcpmanager
-    steps:
-      - checkout
-      - run: go get -v -t -d ./...
-      - run: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v -o /go/bin/controller github.com/kramergroup/dhcpmanager/cmd/controller
-      - persist_to_workspace:
-          root: /go
-          paths:
-            - bin
-
   deploy-container:
     docker:
       - image: docker:17.05.0-ce-git
@@ -43,6 +15,8 @@ jobs:
       - run: docker push kramergroup/dhcpmanager-apiserver
       - run: docker build -f cmd/controller/Dockerfile -t kramergroup/dhcpmanager-controller .
       - run: docker push kramergroup/dhcpmanager-controller
+      - run: docker build -f cmd/backend/Dockerfile -t kramergroup/dhcpmanager-ui-backend .
+      - run: docker push kramergroup/dhcpmanager-ui-backend
 
 workflows:
   version: 2
