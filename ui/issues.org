@@ -1,0 +1,24 @@
+#+TITLE: DHCPManager UI project
+
+* Features
+
+** TODO Device List
+
+    - Shows all active devices
+    - Display lease info
+        - IP
+        - Expires on 
+    - Option to delete device
+
+** DONE MAC List 
+
+    - Visual representation of 'MAC pressure' (available MACs)
+    - List of available MACs
+      That works, but is not very useful. Probably better to just have the Visual
+    - Option to import more MACs
+    - Option to delete MAC
+
+** TODO Other Features
+
+    - None planned yet
+
