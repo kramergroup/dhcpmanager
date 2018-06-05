@@ -18,7 +18,7 @@ FROM mhart/alpine-node as ui-builder
 COPY ./cmd/ui/frontend /ui
 WORKDIR /ui
 
-RUN npm run build
+RUN npm install && npm run build
 
 # ---------------------------------------------------------------------------------------------
 
