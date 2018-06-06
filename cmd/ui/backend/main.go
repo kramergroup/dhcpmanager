@@ -75,12 +75,12 @@ func main() {
 	processConfiguration()
 
 	// Backing infrastructure
-	// var err error
-	// sm, err = dhcpmanager.NewStateManager(config.etcdEndpoints, config.dialTimeout, config.requestTimeout)
-	// if err != nil {
-	// 	log.Fatalf("Could not access etcd at %s", config.etcdEndpoints)
-	// }
-	sm = NewInMemoryStateManager()
+	var err error
+	sm, err = dhcpmanager.NewStateManager(config.EtcdEndpoints, config.DialTimeout, config.RequestTimeout)
+	if err != nil {
+		log.Fatalf("Could not access etcd at %s", config.EtcdEndpoints)
+	}
+	//sm = NewInMemoryStateManager()
 
 	// Routing
 	router := mux.NewRouter()
