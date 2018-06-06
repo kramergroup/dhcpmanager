@@ -10,7 +10,6 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-          docker_layer_caching: true
       - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - run: docker build -f cmd/apiserver/Dockerfile -t kramergroup/dhcpmanager-apiserver .
       - run: docker push kramergroup/dhcpmanager-apiserver
