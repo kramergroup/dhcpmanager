@@ -6,7 +6,6 @@ import Paper from '@material-ui/core/Paper';
 import {arc} from 'd3-shape'
 import {pie} from 'd3-shape'
 import {scaleLinear} from 'd3-scale'
-import Dimensions from 'react-dimensions'
 import Websocket from 'react-websocket';
 
 const style = theme => ({
