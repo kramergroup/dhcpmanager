@@ -30,6 +30,11 @@ class App extends Component {
 
   title = "Network Interfaces"
 
+  url(s) {
+    var l = window.location;
+    return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + s;
+  }
+
   render() {
 
     const { classes } = this.props;
@@ -39,10 +44,10 @@ class App extends Component {
         <TopBar></TopBar>
         <div className={classes.content}>
           <div className={classes.deviceTable}>
-            <DeviceTable endpoint="ws://localhost:8080/ws/allocations"></DeviceTable>
+            <DeviceTable endpoint={this.url("/ws/allocations")}></DeviceTable>
           </div>
           <div className={classes.macList}>
-            <MacPlot endpoint="ws://localhost:8080/ws/macpool" width="300" height="300"></MacPlot>
+            <MacPlot endpoint={this.url("/ws/macpool")} width="300" height="300"></MacPlot>
           </div>
         </div>
       </div>
