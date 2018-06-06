@@ -1,1 +1,2 @@
-*/node_modules
+cmd/ui/frontend/node_modules
+cmd/ui/frontend/build

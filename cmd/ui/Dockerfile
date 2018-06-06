@@ -1,13 +1,17 @@
 FROM node:latest as ui-builder
 
-RUN npm install -g create-react-app && \
+RUN npm install -g react-scripts && \
+		npm install -g ajv && \
 		npm install -g react && \
-		npm install -g @material-ui/core && \
+		npm install -g react-dom && \
+		npm install -g react-websocket && \
+		npm install -g @material-ui && \
 		npm install -g d3
 
 COPY ./cmd/ui/frontend /ui
 WORKDIR /ui
 
+RUN npm install --save
 RUN npm run build
 
 # ---------------------------------------------------------------------------------------------
