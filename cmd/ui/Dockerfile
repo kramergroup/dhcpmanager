@@ -3,7 +3,7 @@ FROM node:latest as ui-builder
 WORKDIR /ui
 
 RUN npm install react-scripts ajv react react-dom react-websocket \
-								material-ui/core prop-types d3
+								@material-ui/core prop-types d3
 
 COPY ./cmd/ui/frontend /ui
 
