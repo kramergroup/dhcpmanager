@@ -263,25 +263,33 @@ func (s *stateManager) watchChannel(watchChan clientv3.WatchChan, stopChan chan 
 				//log.Printf("Watch event - Key version: %d, createRev: %d, modRev: %d", ev.Kv.Version, ev.Kv.CreateRevision, ev.Kv.ModRevision)
 				switch ev.Type {
 				case clientv3.EventTypePut:
-					lease := decode(ev.Kv.Value)
-					if ev.IsCreate() {
-						if watcher.OnCreate != nil {
-							watcher.OnCreate(lease)
+					if lease, err := decode(ev.Kv.Value); err != nil {
+						if ev.IsCreate() {
+							if watcher.OnCreate != nil {
+								watcher.OnCreate(lease)
+							}
+						} else if ev.IsModify() {
+							if watcher.OnModify != nil {
+								watcher.OnModify(lease)
+							}
 						}
-					} else if ev.IsModify() {
-						if watcher.OnModify != nil {
-							watcher.OnModify(lease)
-						}
+					} else {
+						log.Printf("Error decoding allocation from etcd store: %s", err.Error())
 					}
 				case clientv3.EventTypeDelete:
 					var lease *Allocation
+					var err error
 					if ev.PrevKv == nil {
-						lease = decode(ev.Kv.Value)
+						lease, err = decode(ev.Kv.Value)
 					} else {
-						lease = decode(ev.PrevKv.Value)
+						lease, err = decode(ev.PrevKv.Value)
 					}
-					if watcher.OnDelete != nil {
-						watcher.OnDelete(lease)
+					if err != nil {
+						if watcher.OnDelete != nil {
+							watcher.OnDelete(lease)
+						}
+					} else {
+						log.Printf("Error decoding allocation from etcd store: %s", err.Error())
 					}
 				}
 			}
@@ -424,7 +432,10 @@ func (s *stateManager) Allocations() ([]*Allocation, error) {
 
 	allocations := make([]*Allocation, gr.Count)
 	for i, item := range gr.Kvs {
-		allocations[i] = decode(item.Value)
+		allocations[i], err = decode(item.Value)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return allocations, nil
@@ -445,13 +456,13 @@ func (s *stateManager) Get(id uuid.UUID) (*Allocation, error) {
 	if gr.Count == 0 {
 		return nil, fmt.Errorf("No allocation for D %s", id.String())
 	}
-	return decode(gr.Kvs[0].Value), nil
+	return decode(gr.Kvs[0].Value)
 }
 
-func decode(value []byte) *Allocation {
-	allocation := new(Allocation)
-	json.NewDecoder(bytes.NewBuffer(value)).Decode(allocation)
-	return allocation
+func decode(value []byte) (*Allocation, error) {
+	allocation := &Allocation{}
+	err := json.NewDecoder(bytes.NewBuffer(value)).Decode(allocation)
+	return allocation, err
 }
 
 func encode(allocation *Allocation) []byte {
