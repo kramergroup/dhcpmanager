@@ -38,7 +38,7 @@ class App extends Component {
   render() {
 
     const { classes } = this.props;
-
+    alert(this.url("/ws/allocations"));
     return (
       <div className={classes.root}>
         <TopBar></TopBar>
