@@ -572,3 +572,34 @@ func (s *stateManager) PopMAC() (net.HardwareAddr, error) {
 
 	return net.ParseMAC(string(gr.Kvs[0].Value))
 }
+
+type InterfaceAlias net.Interface
+
+func (a InterfaceAlias) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		Index        int    // positive integer that starts at one, zero is never used
+		MTU          int    // maximum transmission unit
+		Name         string // e.g., "en0", "lo0", "eth0.100"
+		HardwareAddr string // IEEE MAC-48, EUI-48 and EUI-64 form
+		Flags        net.Flags
+	}{
+		Index:        a.Index,
+		MTU:          a.MTU,
+		Name:         a.Name,
+		HardwareAddr: a.HardwareAddr.String(),
+		Flags:        a.Flags,
+	})
+}
+
+func (n *Allocation) MarshalJSON() ([]byte, error) {
+	var iface InterfaceAlias
+	iface = (InterfaceAlias)(n.Interface)
+
+	return json.Marshal(&struct {
+		Interface InterfaceAlias
+		*Allocation
+	}{
+		Interface:  iface,
+		Allocation: n,
+	})
+}
