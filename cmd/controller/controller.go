@@ -46,14 +46,16 @@ func (c *Controller) Stop() {
 	}
 	if allocations, err := c.sm.Allocations(); err == nil {
 		for _, allocation := range allocations {
-			if allocation.Lease != nil {
-				c.dhcp.Stop(&allocation.Lease.FixedAddress)
+			if allocation.State == dhcpmanager.Bound {
+				if allocation.Lease != nil {
+					c.dhcp.Stop(&allocation.Lease.FixedAddress)
+				}
+				if c.createInterfaces {
+					dhcpmanager.RemoveDevice(&allocation.Interface)
+				}
+				allocation.State = dhcpmanager.Stopped
+				c.sm.Put(allocation)
 			}
-			if c.createInterfaces {
-				dhcpmanager.RemoveDevice(&allocation.Interface)
-			}
-			allocation.State = dhcpmanager.Stopped
-			c.sm.Put(allocation)
 		}
 	}
 	c.watchStopFunc = nil
@@ -143,6 +145,10 @@ func (c *Controller) processUnboundAllocation(allocation *dhcpmanager.Allocation
 
 func (c *Controller) processStoppedAllocation(allocation *dhcpmanager.Allocation) {
 
+	if allocation == nil {
+		return
+	}
+
 	renewCallback := func(iface *net.Interface, lease *dhclient.Lease) {
 		allocation.Lease = lease
 		if err := c.sm.Put(allocation); err != nil {
@@ -150,7 +156,7 @@ func (c *Controller) processStoppedAllocation(allocation *dhcpmanager.Allocation
 		}
 	}
 
-	if allocation.Lease.Expire.Before(time.Now()) {
+	if allocation.Lease != nil && allocation.Lease.Expire.Before(time.Now()) {
 		log.Printf("Warning: lease for IP %s already expired.", allocation.Lease.FixedAddress)
 		c.sm.Remove(allocation)
 		return
