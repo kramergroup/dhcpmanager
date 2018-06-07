@@ -279,11 +279,12 @@ func (s *stateManager) watchChannel(watchChan clientv3.WatchChan, stopChan chan 
 				case clientv3.EventTypeDelete:
 					var lease *Allocation
 					var err error
-					if ev.PrevKv == nil {
-						lease, err = decode(ev.Kv.Value)
-					} else {
-						lease, err = decode(ev.PrevKv.Value)
-					}
+					// if ev.PrevKv == nil {
+					// 	lease, err = decode(ev.Kv.Value)
+					// } else {
+					// 	lease, err = decode(ev.PrevKv.Value)
+					// }
+					lease, err = decode(ev.Kv.Value)
 					if err == nil {
 						if watcher.OnDelete != nil {
 							watcher.OnDelete(lease)
