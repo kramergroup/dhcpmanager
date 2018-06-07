@@ -85,7 +85,7 @@ class DeviceTable extends Component {
                 <TableRow key={n.id}>
                   <TableCell component="th" scope="row">{n.Hostname}</TableCell> 
                   <TableCell>{n.Lease !== null ? n.Lease.FixedAddress : "n/a"}</TableCell>
-                  <TableCell>{formatHardwareAddr(n.Interface.HardwareAddr)}</TableCell>
+                  <TableCell>{this.formatHardwareAddr(n.Interface.HardwareAddr)}</TableCell>
                   <TableCell>{n.Lease !== null ? n.Lease.Exire : "n/a"}</TableCell>
                 </TableRow>
               );
