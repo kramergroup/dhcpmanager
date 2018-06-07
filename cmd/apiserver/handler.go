@@ -175,7 +175,7 @@ func hostnameForService(svc string) string {
 		return parts[0]
 	}
 	if len(parts) > 2 {
-		log.Println("Malformated service identifier [%s] - Hostname will be truncated", svc)
+		log.Printf("Malformated service identifier [%s] - Hostname will be truncated", svc)
 	}
 	return fmt.Sprintf("%s.%s", parts[1], parts[0])
 
