@@ -48,7 +48,9 @@ func TestMashallingInterface(t *testing.T) {
 func TestMashallingAllocation(t *testing.T) {
 	mac, _ := net.ParseMAC("aa:bb:cc:dd:ee:ff")
 	alloc := &Allocation{
-		ID: uuid.New(),
+		ID:       uuid.New(),
+		Hostname: "test",
+		State:    Unbound,
 		Interface: net.Interface{
 			Index:        0,
 			MTU:          1,
@@ -74,7 +76,20 @@ func TestMashallingAllocation(t *testing.T) {
 		t.Log("Unmarshal returned without error")
 	}
 
+	t.Log(alloc)
 	t.Log(alloc2)
+
+	if alloc.State != alloc2.State {
+		t.Errorf("Field mismatch [State]: %d / %d", alloc.ID, alloc2.ID)
+	}
+
+	if alloc.Hostname != alloc2.Hostname {
+		t.Errorf("Field mismatch [Hostname]: %s / %s", alloc.ID, alloc2.ID)
+	}
+
+	if alloc.ID != alloc2.ID {
+		t.Errorf("Field mismatch [ID]: %d / %d", alloc.ID, alloc2.ID)
+	}
 
 	if alloc.Interface.Index != alloc2.Interface.Index {
 		t.Errorf("Field mismatch [Index]: %d / %d", alloc.Interface.Index, alloc2.Interface.Index)
