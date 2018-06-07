@@ -9,7 +9,11 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import Websocket from 'react-websocket';
 
-const styles = {}
+const styles = {
+  root: {
+    marginTop: '16px'
+  }
+}
 
 class DeviceTable extends Component {
 
