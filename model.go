@@ -263,7 +263,7 @@ func (s *stateManager) watchChannel(watchChan clientv3.WatchChan, stopChan chan 
 				//log.Printf("Watch event - Key version: %d, createRev: %d, modRev: %d", ev.Kv.Version, ev.Kv.CreateRevision, ev.Kv.ModRevision)
 				switch ev.Type {
 				case clientv3.EventTypePut:
-					if lease, err := decode(ev.Kv.Value); err != nil {
+					if lease, err := decode(ev.Kv.Value); err == nil {
 						if ev.IsCreate() {
 							if watcher.OnCreate != nil {
 								watcher.OnCreate(lease)
@@ -284,7 +284,7 @@ func (s *stateManager) watchChannel(watchChan clientv3.WatchChan, stopChan chan 
 					} else {
 						lease, err = decode(ev.PrevKv.Value)
 					}
-					if err != nil {
+					if err == nil {
 						if watcher.OnDelete != nil {
 							watcher.OnDelete(lease)
 						}
