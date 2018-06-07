@@ -450,7 +450,7 @@ func (s *stateManager) Get(id uuid.UUID) (*Allocation, error) {
 
 func decode(value []byte) *Allocation {
 	allocation := new(Allocation)
-	json.NewDecoder(bytes.NewBuffer(value)).Decode(&allocation)
+	json.NewDecoder(bytes.NewBuffer(value)).Decode(allocation)
 	return allocation
 }
 
