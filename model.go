@@ -284,7 +284,7 @@ func (s *stateManager) watchChannel(watchChan clientv3.WatchChan, stopChan chan 
 					// } else {
 					// 	lease, err = decode(ev.PrevKv.Value)
 					// }
-					lease, err = decode(ev.Kv.Value)
+					lease, err = decode(ev.PrevKv.Value)
 					if err == nil {
 						if watcher.OnDelete != nil {
 							watcher.OnDelete(lease)
