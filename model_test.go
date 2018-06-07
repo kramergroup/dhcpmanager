@@ -1,6 +1,7 @@
 package dhcpmanager
 
 import (
+	"bytes"
 	"encoding/json"
 	"net"
 	"testing"
@@ -60,17 +61,16 @@ func TestMashallingAllocation(t *testing.T) {
 		},
 	}
 
-	data, err := json.Marshal(alloc)
-	if err != nil {
+	data := new(bytes.Buffer)
+	if err := json.NewEncoder(data).Encode(alloc); err != nil {
 		t.Error(err)
 	} else {
 		t.Log("Marshal returned without error")
 	}
-	t.Log(string(data))
+	t.Log(data.String())
 
 	alloc2 := &Allocation{}
-	err = json.Unmarshal(data, alloc2)
-	if err != nil {
+	if err := json.NewDecoder(data).Decode(alloc2); err != nil {
 		t.Error(err)
 	} else {
 		t.Log("Unmarshal returned without error")
