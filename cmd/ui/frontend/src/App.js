@@ -38,15 +38,21 @@ class App extends Component {
   render() {
 
     const { classes } = this.props;
-    
+
     return (
       <div className={classes.root}>
         <TopBar></TopBar>
         <div className={classes.content}>
           <div className={classes.deviceTable}>
+            <Typography variant="headline" component="h2">
+             Allocations
+            </Typography>
             <DeviceTable endpoint={this.url("ws/allocations")}></DeviceTable>
           </div>
           <div className={classes.macList}>
+            <Typography variant="headline" component="h2">
+              Device Address Pool
+            </Typography>
             <MacPlot endpoint={this.url("ws/macpool")} width="300" height="300"></MacPlot>
           </div>
         </div>

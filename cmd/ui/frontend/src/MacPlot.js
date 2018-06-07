@@ -55,9 +55,6 @@ class MacPlot extends Component {
     var segments = p(this.state.data).map( (d,i) => <path style={{fill: c[i]}} d={a(d)}/> )
 
     return <div className={classes.root}>
-            <Typography variant="headline" component="h2">
-            Device Address Pool
-            </Typography>
             <svg width={this.props.width} height={this.props.height}>
             <g transform={`translate(${this.props.width/2},${this.props.height/2})`}>
               {segments}
