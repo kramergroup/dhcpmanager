@@ -78,6 +78,40 @@ func TestMashallingAllocation(t *testing.T) {
 	t.Log(alloc)
 	t.Log(alloc2)
 
+	assertEqual(alloc, alloc2, t)
+}
+
+func TestMashallingNewAllocation(t *testing.T) {
+
+	alloc := &Allocation{
+		ID:        uuid.New(),
+		Hostname:  "test",
+		State:     Unbound,
+		Interface: net.Interface{},
+	}
+
+	data, err := encode(alloc)
+	if err != nil {
+		t.Error(err)
+	} else {
+		t.Log("Marshal returned without error")
+	}
+	t.Log(string(data))
+
+	alloc2, err := decode(data)
+	if err != nil {
+		t.Error(err)
+	} else {
+		t.Log("Unmarshal returned without error")
+	}
+
+	t.Log(alloc)
+	t.Log(alloc2)
+
+	assertEqual(alloc, alloc2, t)
+}
+
+func assertEqual(alloc, alloc2 *Allocation, t *testing.T) {
 	if alloc.State != alloc2.State {
 		t.Errorf("Field mismatch [State]: %d / %d", alloc.ID, alloc2.ID)
 	}
@@ -109,5 +143,4 @@ func TestMashallingAllocation(t *testing.T) {
 	if alloc.Interface.HardwareAddr.String() != alloc2.Interface.HardwareAddr.String() {
 		t.Errorf("Field mismatch [HardwareAddr]: %s / %s", alloc.Interface.HardwareAddr.String(), alloc2.Interface.HardwareAddr.String())
 	}
-
 }

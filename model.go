@@ -610,6 +610,12 @@ func (a InterfaceAlias) MarshalJSON() ([]byte, error) {
 }
 
 func (a *InterfaceAlias) UnmarshalJSON(data []byte) error {
+
+	// Catch null values
+	if len(data) == 0 {
+		return nil
+	}
+
 	aux := &struct {
 		Index        int    // positive integer that starts at one, zero is never used
 		MTU          int    // maximum transmission unit
@@ -628,8 +634,10 @@ func (a *InterfaceAlias) UnmarshalJSON(data []byte) error {
 	a.Flags = aux.Flags
 
 	var err error
-	if a.HardwareAddr, err = net.ParseMAC(aux.HardwareAddr); err != nil {
-		return err
+	if aux.HardwareAddr != "" { // Catch default "empty" value
+		if a.HardwareAddr, err = net.ParseMAC(aux.HardwareAddr); err != nil {
+			return err
+		}
 	}
 	return nil
 }
