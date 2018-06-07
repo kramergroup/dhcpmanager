@@ -573,6 +573,12 @@ func (s *stateManager) PopMAC() (net.HardwareAddr, error) {
 	return net.ParseMAC(string(gr.Kvs[0].Value))
 }
 
+// Custom JSON (un)mashalling
+// Source: http://choly.ca/post/go-json-marshalling/
+// We need to use a custom marshalling/unmarshalling approach to
+// properly convert net.HardwareAddr in the net.Interface struct to
+// a standard string representation
+
 type InterfaceAlias net.Interface
 
 func (a InterfaceAlias) MarshalJSON() ([]byte, error) {
@@ -591,15 +597,53 @@ func (a InterfaceAlias) MarshalJSON() ([]byte, error) {
 	})
 }
 
+func (a InterfaceAlias) UnmarshalJSON(data []byte) error {
+	aux := &struct {
+		Index        int    // positive integer that starts at one, zero is never used
+		MTU          int    // maximum transmission unit
+		Name         string // e.g., "en0", "lo0", "eth0.100"
+		HardwareAddr string // IEEE MAC-48, EUI-48 and EUI-64 form
+		Flags        net.Flags
+	}{}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	a.Index = aux.Index
+	a.MTU = aux.MTU
+	a.Name = aux.Name
+	a.Flags = aux.Flags
+
+	var err error
+	if a.HardwareAddr, err = net.ParseMAC(aux.HardwareAddr); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (n *Allocation) MarshalJSON() ([]byte, error) {
-	var iface InterfaceAlias
-	iface = (InterfaceAlias)(n.Interface)
 
 	return json.Marshal(&struct {
 		Interface InterfaceAlias
 		*Allocation
 	}{
-		Interface:  iface,
+		Interface:  (InterfaceAlias)(n.Interface),
 		Allocation: n,
 	})
+}
+
+func (n *Allocation) UnmarshalJSON(data []byte) error {
+	aux := &struct {
+		Interface InterfaceAlias
+		*Allocation
+	}{
+		Allocation: n,
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	n.Interface = (net.Interface)(aux.Interface)
+	return nil
 }
