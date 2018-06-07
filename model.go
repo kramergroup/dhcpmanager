@@ -512,7 +512,7 @@ func (s *stateManager) PutMAC(mac net.HardwareAddr) error {
 
 	amac := strings.ToLower(mac.String())
 	if amac == "" {
-		return fmt.Errorf("Invalid MAC format [%s]")
+		return fmt.Errorf("Invalid MAC format [%s]", mac.String())
 	}
 
 	// Check if MAC is already in use
@@ -597,7 +597,7 @@ func (a InterfaceAlias) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (a InterfaceAlias) UnmarshalJSON(data []byte) error {
+func (a *InterfaceAlias) UnmarshalJSON(data []byte) error {
 	aux := &struct {
 		Index        int    // positive integer that starts at one, zero is never used
 		MTU          int    // maximum transmission unit
@@ -606,7 +606,7 @@ func (a InterfaceAlias) UnmarshalJSON(data []byte) error {
 		Flags        net.Flags
 	}{}
 
-	if err := json.Unmarshal(data, &aux); err != nil {
+	if err := json.Unmarshal(data, aux); err != nil {
 		return err
 	}
 
@@ -624,21 +624,23 @@ func (a InterfaceAlias) UnmarshalJSON(data []byte) error {
 
 func (n *Allocation) MarshalJSON() ([]byte, error) {
 
+	type AllocationAlias Allocation
 	return json.Marshal(&struct {
 		Interface InterfaceAlias
-		*Allocation
+		*AllocationAlias
 	}{
-		Interface:  (InterfaceAlias)(n.Interface),
-		Allocation: n,
+		Interface:       (InterfaceAlias)(n.Interface),
+		AllocationAlias: (*AllocationAlias)(n),
 	})
 }
 
 func (n *Allocation) UnmarshalJSON(data []byte) error {
+	type AllocationAlias Allocation
 	aux := &struct {
 		Interface InterfaceAlias
-		*Allocation
+		*AllocationAlias
 	}{
-		Allocation: n,
+		AllocationAlias: (*AllocationAlias)(n),
 	}
 
 	if err := json.Unmarshal(data, &aux); err != nil {
