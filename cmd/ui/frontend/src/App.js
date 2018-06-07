@@ -38,16 +38,16 @@ class App extends Component {
   render() {
 
     const { classes } = this.props;
-    alert(this.url("/ws/allocations"));
+    
     return (
       <div className={classes.root}>
         <TopBar></TopBar>
         <div className={classes.content}>
           <div className={classes.deviceTable}>
-            <DeviceTable endpoint={this.url("/ws/allocations")}></DeviceTable>
+            <DeviceTable endpoint={this.url("ws/allocations")}></DeviceTable>
           </div>
           <div className={classes.macList}>
-            <MacPlot endpoint={this.url("/ws/macpool")} width="300" height="300"></MacPlot>
+            <MacPlot endpoint={this.url("ws/macpool")} width="300" height="300"></MacPlot>
           </div>
         </div>
       </div>
