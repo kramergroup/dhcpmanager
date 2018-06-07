@@ -43,6 +43,27 @@ class DeviceTable extends Component {
     }
   }
 
+  stringToByte(str) {
+    var bytes = []; // char codes
+    var hex = []; // hex codes
+    for (var i = 0; i < str.length; ++i) {
+      var code = str.charCodeAt(i);
+      
+      bytes = bytes.concat([code]);
+    }
+    return bytes
+  }
+
+  formatHardwareAddr(value) {
+    var bytes = this.stringToByte(value);
+    var hex = []; // hex codes
+    for (var i = 0; i < bytes.length; ++i) {
+      var code = parseInt(bytes[i],10).toString(16)
+      hex = bytes.concat([code]);
+    }
+    return hex.join(':')
+  }
+
   render() {
 
     const {classes} = this.props;
@@ -64,7 +85,7 @@ class DeviceTable extends Component {
                 <TableRow key={n.id}>
                   <TableCell component="th" scope="row">{n.Hostname}</TableCell> 
                   <TableCell>{n.Lease !== null ? n.Lease.FixedAddress : "n/a"}</TableCell>
-                  <TableCell>{n.Interface.HardwareAddr}</TableCell>
+                  <TableCell>{formatHardwareAddr(n.Interface.HardwareAddr)}</TableCell>
                   <TableCell>{n.Lease !== null ? n.Lease.Exire : "n/a"}</TableCell>
                 </TableRow>
               );
