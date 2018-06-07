@@ -353,8 +353,9 @@ func (s *stateManager) Put(allocation *Allocation) error {
 	defer cancel()
 
 	// Encode
-	b := new(bytes.Buffer)
-	if err := json.NewEncoder(b).Encode(allocation); err != nil {
+	var b []byte
+	var err error
+	if b, err = encode(allocation); err != nil {
 		log.Printf("State: error econding lease [%s]", err.Error())
 		return err
 	}
@@ -370,7 +371,7 @@ func (s *stateManager) Put(allocation *Allocation) error {
 
 		// Put
 		key := fmt.Sprintf("%s/allocations/%s", etcdPrefix, allocation.ID)
-		_, err = s.kv.Put(ctx, key, b.String(), clientv3.WithLease(ls.ID))
+		_, err = s.kv.Put(ctx, key, string(b), clientv3.WithLease(ls.ID))
 
 		if err != nil {
 			log.Printf("State: error writing to etcd [%s]", err.Error())
@@ -380,7 +381,7 @@ func (s *stateManager) Put(allocation *Allocation) error {
 		// Allication has no lease yet, store without etcd lease
 		// Put
 		key := fmt.Sprintf("%s/allocations/%s", etcdPrefix, allocation.ID)
-		_, err := s.kv.Put(ctx, key, b.String())
+		_, err := s.kv.Put(ctx, key, string(b))
 
 		if err != nil {
 			log.Printf("State: error writing to etcd [%s]", err.Error())
@@ -465,10 +466,10 @@ func decode(value []byte) (*Allocation, error) {
 	return allocation, err
 }
 
-func encode(allocation *Allocation) []byte {
+func encode(allocation *Allocation) ([]byte, error) {
 	b := new(bytes.Buffer)
-	json.NewEncoder(b).Encode(allocation)
-	return b.Bytes()
+	err := json.NewEncoder(b).Encode(allocation)
+	return b.Bytes(), err
 }
 
 // GetByIP returns the allocation by IP

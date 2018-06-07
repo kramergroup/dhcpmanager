@@ -64,7 +64,7 @@ func (c *DHCPController) BindAllocationToInterface(allocation *Allocation, iface
 		c.clients[lease.FixedAddress.String()] = &client
 		return lease, nil
 	case <-time.After(c.timeout):
-		log.Printf("Timeout binding to interface [%s] for %s", c.iface, allocation.Hostname)
+		log.Printf("Timeout binding to interface [%s] for %s", iface.Name, allocation.Hostname)
 		client.Stop()
 		return nil, errors.New("Timeout binding to interface")
 	}
@@ -130,7 +130,14 @@ func (c *DHCPController) CreateDevice(ifName string, mac *net.HardwareAddr) (*ne
 	}
 
 	ifn, err := net.InterfaceByName(la.Name)
-	netlink.LinkSetUp(mybridge)
+	if err == nil {
+		err = netlink.LinkSetUp(mybridge)
+	}
+
+	if err != nil {
+		// try to remove device if setup failed to avoid orphaned devices
+		netlink.LinkDel(mybridge)
+	}
 	return ifn, err
 }
 
