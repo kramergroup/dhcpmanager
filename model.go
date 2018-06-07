@@ -334,7 +334,7 @@ func (s *stateManager) watchMACPool(watchChan clientv3.WatchChan, stopChan chan 
 						}
 					}
 				case clientv3.EventTypeDelete:
-					mac, err := net.ParseMAC(string(ev.Kv.Key))
+					mac, err := net.ParseMAC(string(ev.PrevKv.Key))
 					if err == nil && watcher.OnPop != nil {
 						watcher.OnPop(mac)
 					}
