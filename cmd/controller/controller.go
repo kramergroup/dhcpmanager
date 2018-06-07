@@ -125,7 +125,7 @@ func (c *Controller) processUnboundAllocation(allocation *dhcpmanager.Allocation
 
 	lease, err := c.dhcp.BindAllocationToInterface(allocation, iface, renewCallback)
 	if err != nil {
-		log.Printf("Warning: Could bind allocation [%s] to device [%s]", allocation.ID, allocation.Interface.Name)
+		log.Printf("Warning: Could not bind allocation [%s] to device [%s]", allocation.ID, allocation.Interface.Name)
 		c.sm.Remove(allocation)
 		return
 	}
@@ -178,7 +178,7 @@ func (c *Controller) processStoppedAllocation(allocation *dhcpmanager.Allocation
 
 	lease, err := c.dhcp.BindAllocationToInterface(allocation, iface, renewCallback)
 	if err != nil {
-		log.Printf("Warning: Could bind allocation [%s] to device [%s]", allocation.ID, allocation.Interface.Name)
+		log.Printf("Warning: Could not bind stopped allocation [%s] to device [%s]", allocation.ID, allocation.Interface.Name)
 		c.sm.Remove(allocation)
 		return
 	}
