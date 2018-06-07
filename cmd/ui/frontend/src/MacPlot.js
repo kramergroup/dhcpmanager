@@ -1,8 +1,5 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import {withStyles} from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
 import {arc} from 'd3-shape'
 import {pie} from 'd3-shape'
 import {scaleLinear} from 'd3-scale'
