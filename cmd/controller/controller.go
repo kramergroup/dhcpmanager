@@ -111,7 +111,7 @@ func (c *Controller) processUnboundAllocation(allocation *dhcpmanager.Allocation
 		}
 		iface, err = c.dhcp.CreateDevice(ifName, &mac)
 		if err != nil {
-			log.Printf("Warning: Could not create device [%s]", ifName)
+			log.Printf("Warning: Could not create device [%s] - %s", ifName, err.Error())
 			c.deleteAllocation(allocation)
 			return
 		}
@@ -158,7 +158,7 @@ func (c *Controller) processStoppedAllocation(allocation *dhcpmanager.Allocation
 
 	if allocation.Lease != nil && allocation.Lease.Expire.Before(time.Now()) {
 		log.Printf("Warning: lease for IP %s already expired.", allocation.Lease.FixedAddress)
-		c.sm.Remove(allocation)
+		c.deleteAllocation(allocation)
 		return
 	}
 
@@ -167,8 +167,8 @@ func (c *Controller) processStoppedAllocation(allocation *dhcpmanager.Allocation
 		var err error
 		iface, err = c.dhcp.CreateDevice(allocation.Interface.Name, &allocation.Interface.HardwareAddr)
 		if err != nil {
-			log.Printf("Warning: Could not create device [%s]", allocation.Interface.Name)
-			c.sm.Remove(allocation)
+			log.Printf("Warning: Could not create device [%s] - %s", allocation.Interface.Name, err.Error())
+			c.deleteAllocation(allocation)
 			return
 		}
 		allocation.Interface = *iface
@@ -177,7 +177,7 @@ func (c *Controller) processStoppedAllocation(allocation *dhcpmanager.Allocation
 		iface, err = c.dhcp.Interface()
 		if err != nil {
 			log.Printf("Warning: Could not access device")
-			c.sm.Remove(allocation)
+			c.deleteAllocation(allocation)
 			return
 		}
 	}
@@ -185,7 +185,7 @@ func (c *Controller) processStoppedAllocation(allocation *dhcpmanager.Allocation
 	lease, err := c.dhcp.BindAllocationToInterface(allocation, iface, renewCallback)
 	if err != nil {
 		log.Printf("Warning: Could not bind stopped allocation [%s] to device [%s]", allocation.ID, allocation.Interface.Name)
-		c.sm.Remove(allocation)
+		c.deleteAllocation(allocation)
 		return
 	}
 	allocation.Lease = lease
