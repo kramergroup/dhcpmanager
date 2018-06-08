@@ -112,7 +112,17 @@ func (c *Controller) processUnboundAllocation(allocation *dhcpmanager.Allocation
 		iface, err = c.dhcp.CreateDevice(ifName, &mac)
 		if err != nil {
 			log.Printf("Warning: Could not create device [%s] - %s", ifName, err.Error())
-			c.deleteAllocation(allocation)
+
+			// Not sure if the allocation should be deleted at this point. Probably not
+			// to give others the option to process it
+			// c.deleteAllocation(allocation)
+
+			// make sure the mac is returned
+			// At this point it is probably not be bound to the allocation and is, therefore,
+			// not released when the allocation is deleted
+			if allocation.Interface.HardwareAddr.String() != mac.String() {
+				c.sm.PutMAC(mac)
+			}
 			return
 		}
 	} else {
@@ -120,7 +130,10 @@ func (c *Controller) processUnboundAllocation(allocation *dhcpmanager.Allocation
 		iface, err = c.dhcp.Interface()
 		if err != nil {
 			log.Printf("Warning: Could not access device")
-			c.deleteAllocation(allocation)
+			// Not sure if the allocation should be deleted at this point. Probably not
+			// to give others the option to process it. It's the job of the creator to
+			// remove stale allocations
+			// c.deleteAllocation(allocation)
 			return
 		}
 	}
@@ -168,7 +181,10 @@ func (c *Controller) processStoppedAllocation(allocation *dhcpmanager.Allocation
 		iface, err = c.dhcp.CreateDevice(allocation.Interface.Name, &allocation.Interface.HardwareAddr)
 		if err != nil {
 			log.Printf("Warning: Could not create device [%s] - %s", allocation.Interface.Name, err.Error())
-			c.deleteAllocation(allocation)
+			// Not sure if the allocation should be deleted at this point. Probably not
+			// to give others the option to process it. It's the job of the creator to
+			// remove stale allocations
+			// c.deleteAllocation(allocation)
 			return
 		}
 		allocation.Interface = *iface
@@ -177,7 +193,10 @@ func (c *Controller) processStoppedAllocation(allocation *dhcpmanager.Allocation
 		iface, err = c.dhcp.Interface()
 		if err != nil {
 			log.Printf("Warning: Could not access device")
-			c.deleteAllocation(allocation)
+			// Not sure if the allocation should be deleted at this point. Probably not
+			// to give others the option to process it. It's the job of the creator to
+			// remove stale allocations
+			// c.deleteAllocation(allocation)
 			return
 		}
 	}
@@ -185,7 +204,10 @@ func (c *Controller) processStoppedAllocation(allocation *dhcpmanager.Allocation
 	lease, err := c.dhcp.BindAllocationToInterface(allocation, iface, renewCallback)
 	if err != nil {
 		log.Printf("Warning: Could not bind stopped allocation [%s] to device [%s]", allocation.ID, allocation.Interface.Name)
-		c.deleteAllocation(allocation)
+		// Not sure if the allocation should be deleted at this point. Probably not
+		// to give others the option to process it. It's the job of the creator to
+		// remove stale allocations
+		// c.deleteAllocation(allocation)
 		return
 	}
 	allocation.Lease = lease
