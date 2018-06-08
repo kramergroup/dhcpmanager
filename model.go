@@ -323,7 +323,8 @@ func (s *stateManager) watchMACPool(watchChan clientv3.WatchChan, stopChan chan 
 				//log.Printf("Watch event - Key version: %d, createRev: %d, modRev: %d", ev.Kv.Version, ev.Kv.CreateRevision, ev.Kv.ModRevision)
 				switch ev.Type {
 				case clientv3.EventTypePut:
-					mac, err := net.ParseMAC(string(ev.Kv.Key))
+					v := strings.Split(string(ev.Kv.Key), "/")
+					mac, err := net.ParseMAC(v[len(v)-1])
 					if err == nil {
 						if ev.IsCreate() && watcher.OnPush != nil {
 							watcher.OnPush(mac)
@@ -332,7 +333,8 @@ func (s *stateManager) watchMACPool(watchChan clientv3.WatchChan, stopChan chan 
 						log.Printf("Error deserialising MAC - %s", err.Error())
 					}
 				case clientv3.EventTypeDelete:
-					mac, err := net.ParseMAC(string(ev.PrevKv.Key))
+					v := strings.Split(string(ev.PrevKv.Key), "/")
+					mac, err := net.ParseMAC(v[len(v)-1])
 					if err == nil {
 						if watcher.OnPop != nil {
 							watcher.OnPop(mac)
