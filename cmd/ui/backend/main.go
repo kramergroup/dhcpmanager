@@ -178,6 +178,7 @@ func pushMACPoolChange(w http.ResponseWriter, r *http.Request) {
 	syssig := make(chan os.Signal, 1)
 	signal.Notify(syssig, syscall.SIGINT, syscall.SIGTERM)
 
+	// Watch the MAC pool
 	watchersig := make(chan bool, 1)
 	trigger := func(a net.HardwareAddr) {
 		watchersig <- true
@@ -185,6 +186,17 @@ func pushMACPoolChange(w http.ResponseWriter, r *http.Request) {
 	watcher := dhcpmanager.MACPoolWatcher{
 		OnPop:  trigger,
 		OnPush: trigger,
+	}
+
+	// Also watch the Allocations to update the number of
+	// bound MAC addresses on changes to Allocation state
+	aTrigger := func(a *dhcpmanager.Allocation) {
+		watchersig <- true
+	}
+	aWatcher := dhcpmanager.AllocationWatcher{
+		OnCreate: aTrigger,
+		OnModify: aTrigger,
+		OnDelete: aTrigger,
 	}
 
 	serialise := func() {
@@ -225,6 +237,9 @@ func pushMACPoolChange(w http.ResponseWriter, r *http.Request) {
 
 	stopWatcher := sm.WatchMACPool(&watcher)
 	defer stopWatcher()
+
+	aStopWatcher := sm.Watch(&aWatcher)
+	defer aStopWatcher()
 
 	// Send current state to new client
 	serialise()
