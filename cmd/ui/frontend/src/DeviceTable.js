@@ -34,7 +34,7 @@ class DeviceTable extends Component {
   formateTime(dateString) {
     var date = new Date(dateString);
     var seconds = Math.floor((new Date() - date) / 1000);
-    interval = Math.floor(seconds / 86400);
+    var interval = Math.floor(seconds / 86400);
     if (interval > 1) {
       return "+" + interval + " d " + date.getHours() + ":" + date.getMinutes();
     } else {
