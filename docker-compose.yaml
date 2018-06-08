@@ -1,40 +1,37 @@
 version: '3'
 services:
+  etcd:
+    image: "quay.io/coreos/etcd"
+    command:
+    - sh
+    - '-c'
+    - >-
+      /usr/local/bin/etcd --data-dir=/data
+      --initial-advertise-peer-urls=http://$$(hostname -i):2380
+      --name=node1 --listen-peer-urls=http://0.0.0.0:2380
+      --advertise-client-urls=http://$$(hostname -i):2379
+      --listen-client-urls http://0.0.0.0:2379 
+      --initial-cluster node1=http://$$(hostname -i):2380
+      --listen-client-urls http://0.0.0.0:2379
+  ui:
+    build: 
+      context: .
+      dockerfile: cmd/ui/Dockerfile
+    depends_on:
+    - etcd
+    ports:
+     - "8080:8080"
   controller:
-    privileged: true
-    build:
+    build: 
       context: .
       dockerfile: cmd/controller/Dockerfile
-    networks:
-      app_net:
-        ipv4_address: 172.18.0.2
-    volumes:
-    - ./dhcpmanager.toml:/etc/dhcpmanager/dhcpmanager.toml
-  apiserver:
-    build:
+    depends_on:
+    - etcd
+  api: 
+    build: 
       context: .
       dockerfile: cmd/apiserver/Dockerfile
     ports:
      - "8000:8000"
-    networks:
-      app_net:
-        ipv4_address: 172.18.0.3
-  etcd:
-    image: "alfatraining/etcd3"
-    networks:
-      app_net:
-        ipv4_address: 172.18.0.4
-  dhcpd:
-    image: "joebiellik/dhcpd"
-    volumes:
-    - ./dhcpd.conf:/etc/dhcp/dhcpd.conf
-    networks:
-      app_net:
-        ipv4_address: 172.18.0.5
-networks:
-  app_net:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-      - subnet: 172.18.0.0/24
+    depends_on:
+    - etcd
