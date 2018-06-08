@@ -279,11 +279,7 @@ func (s *stateManager) watchChannel(watchChan clientv3.WatchChan, stopChan chan 
 				case clientv3.EventTypeDelete:
 					var lease *Allocation
 					var err error
-					// if ev.PrevKv == nil {
-					// 	lease, err = decode(ev.Kv.Value)
-					// } else {
-					// 	lease, err = decode(ev.PrevKv.Value)
-					// }
+
 					lease, err = decode(ev.PrevKv.Value)
 					if err == nil {
 						if watcher.OnDelete != nil {
@@ -320,7 +316,7 @@ func (s *stateManager) WatchMACPool(watcher *MACPoolWatcher) func() {
 }
 
 func (s *stateManager) watchMACPool(watchChan clientv3.WatchChan, stopChan chan interface{}, watcher *MACPoolWatcher) {
-	for true {
+	for {
 		select {
 		case w := <-watchChan:
 			for _, ev := range w.Events {
@@ -328,15 +324,21 @@ func (s *stateManager) watchMACPool(watchChan clientv3.WatchChan, stopChan chan 
 				switch ev.Type {
 				case clientv3.EventTypePut:
 					mac, err := net.ParseMAC(string(ev.Kv.Key))
-					if err == nil && ev.IsCreate() {
-						if watcher.OnPush != nil {
+					if err == nil {
+						if ev.IsCreate() && watcher.OnPush != nil {
 							watcher.OnPush(mac)
 						}
+					} else {
+						log.Printf("Error deserialising MAC - %s", err.Error())
 					}
 				case clientv3.EventTypeDelete:
 					mac, err := net.ParseMAC(string(ev.PrevKv.Key))
-					if err == nil && watcher.OnPop != nil {
-						watcher.OnPop(mac)
+					if err == nil {
+						if watcher.OnPop != nil {
+							watcher.OnPop(mac)
+						}
+					} else {
+						log.Printf("Error deserialising MAC - %s", err.Error())
 					}
 				}
 			}
