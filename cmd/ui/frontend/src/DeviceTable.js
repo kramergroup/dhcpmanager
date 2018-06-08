@@ -65,7 +65,7 @@ class DeviceTable extends Component {
                   <TableCell component="th" scope="row">{n.Hostname}</TableCell> 
                   <TableCell>{n.Lease !== null ? n.Lease.FixedAddress : "n/a"}</TableCell>
                   <TableCell>{n.Interface.HardwareAddr}</TableCell>
-                  <TableCell>{n.Lease !== null ? formateTime(n.Lease.Expire) : "n/a"}</TableCell>
+                  <TableCell>{n.Lease !== null ? this.formateTime(n.Lease.Expire) : "n/a"}</TableCell>
                 </TableRow>
               );
             })}
