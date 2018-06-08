@@ -2,9 +2,14 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import blue from '@material-ui/core/colors/blue';
+
 import DeviceTable from './DeviceTable'
 import TopBar from './TopBar'
 import MacPlot from './MacPlot'
+
 import './App.css';
 
 const styles = {
@@ -28,6 +33,18 @@ const styles = {
   }
 };
 
+const font = "'Lato', sans-serif"; 
+
+const theme = createMuiTheme({
+  palette: {
+    primary: blue,
+  },
+  typography: {
+    fontFamily: ['Lato','Roboto','sans-serif'],
+  },
+});
+
+
 class App extends Component {
 
   title = "Network Interfaces"
@@ -42,6 +59,7 @@ class App extends Component {
     const { classes } = this.props;
 
     return (
+      <MuiThemeProvider theme={theme}>
       <div className={classes.root}>
         <TopBar></TopBar>
         <div className={classes.content}>
@@ -59,6 +77,7 @@ class App extends Component {
           </div>
         </div>
       </div>
+      </MuiThemeProvider>
     );
   }
 }

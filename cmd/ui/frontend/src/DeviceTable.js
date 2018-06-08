@@ -48,32 +48,32 @@ class DeviceTable extends Component {
     const {classes} = this.props;
 
     return (
-      <Paper className={classes.root}>
-        <Table className={classes.table}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Hostname</TableCell>
-              <TableCell>IP</TableCell>
-              <TableCell>MAC</TableCell>
-              <TableCell>Expires</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {this.state.data.map(n => {
-              return (
-                <TableRow key={n.id}>
-                  <TableCell component="th" scope="row">{n.Hostname}</TableCell> 
-                  <TableCell>{n.Lease !== null ? n.Lease.FixedAddress : "n/a"}</TableCell>
-                  <TableCell>{n.Interface.HardwareAddr}</TableCell>
-                  <TableCell>{n.Lease !== null ? this.formateTime(n.Lease.Expire) : "n/a"}</TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-        <Websocket url={this.props.endpoint}
-             onMessage={this.handleData.bind(this)}/>
-      </Paper>
+        <Paper className={classes.root}>
+          <Table className={classes.table}>
+            <TableHead>
+              <TableRow>
+                <TableCell>Hostname</TableCell>
+                <TableCell>IP</TableCell>
+                <TableCell>MAC</TableCell>
+                <TableCell>Expires</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {this.state.data.map(n => {
+                return (
+                  <TableRow key={n.id}>
+                    <TableCell component="th" scope="row">{n.Hostname}</TableCell> 
+                    <TableCell>{n.Lease !== null ? n.Lease.FixedAddress : "n/a"}</TableCell>
+                    <TableCell>{n.Interface.HardwareAddr}</TableCell>
+                    <TableCell>{n.Lease !== null ? this.formateTime(n.Lease.Expire) : "n/a"}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+          <Websocket url={this.props.endpoint}
+              onMessage={this.handleData.bind(this)}/>
+        </Paper>
     );
   }
 
