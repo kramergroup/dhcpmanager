@@ -115,10 +115,63 @@ spec:
     spec:
       containers:
       - name: etcd
-        image: alfatraining/etcd3
+        image: quay.io/coreos/etcd  
+        command:
+            - sh
+            - '-c'
+            - >-
+              /usr/local/bin/etcd --data-dir=/data --name=node1
+              --initial-advertise-peer-urls=http://${node_ip}:2380
+              --listen-peer-urls=http://0.0.0.0:2380
+              --advertise-client-urls=http://${node_ip}:2379
+              --listen-client-urls http://0.0.0.0:2379 --initial-cluster
+              node1=http://${node_ip}:2380
+        env:
+          - name: node_ip
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
         ports:
         - containerPort: 2379
         - containerPort: 2380
+        volumeMounts:
+            - name: data
+              mountPath: /data
+        volumes:
+        - name: data
+          emptyDir: {}
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: dhcpmanager-ui
+  namespace: metallb-system
+  labels:
+    app: dhcpmanager
+    component: ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dhcpmanager
+      component: ui
+  template:
+    metadata:
+      labels:
+        app: dhcpmanager
+        component: ui
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: dhcpmanager-config
+      containers:
+        - name: ui
+          image: kramergroup/dhcpmanager-ui
+          volumeMounts:
+            - name: config
+              mountPath: /etc/dhcpmanager
 ---
 apiVersion: v1
 kind: Service
@@ -133,6 +186,20 @@ spec:
   - name: html # Actually, no port is needed.
     port: 80
     targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dhcpmanager-ui
+  namespace: metallb-system
+spec:
+  selector:
+    app: dhcpmanager
+    component: ui
+  ports:
+  - name: html # Actually, no port is needed.
+    port: 80
+    targetPort: 8080
 ---
 apiVersion: v1
 kind: Service
