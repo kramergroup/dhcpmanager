@@ -24,6 +24,7 @@ const styles = {
     width: '0%',
     margin: '2em',
     marginLeft: '1em',
+    textAlign: 'center',
   }
 };
 
