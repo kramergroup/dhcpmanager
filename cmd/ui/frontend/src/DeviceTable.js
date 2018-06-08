@@ -31,6 +31,18 @@ class DeviceTable extends Component {
     }
   }
 
+  formateTime(dateString) {
+    var date = new Date(dateString);
+    var seconds = Math.floor((new Date() - date) / 1000);
+    interval = Math.floor(seconds / 86400);
+    if (interval > 1) {
+      return "+" + interval + " d " + date.getHours() + ":" + date.getMinutes();
+    } else {
+      return date.getHours() + ":" + date.getMinutes();
+    }
+
+  }
+
   render() {
 
     const {classes} = this.props;
@@ -53,7 +65,7 @@ class DeviceTable extends Component {
                   <TableCell component="th" scope="row">{n.Hostname}</TableCell> 
                   <TableCell>{n.Lease !== null ? n.Lease.FixedAddress : "n/a"}</TableCell>
                   <TableCell>{n.Interface.HardwareAddr}</TableCell>
-                  <TableCell>{n.Lease !== null ? n.Lease.Expire : "n/a"}</TableCell>
+                  <TableCell>{n.Lease !== null ? formateTime(n.Lease.Expire) : "n/a"}</TableCell>
                 </TableRow>
               );
             })}
