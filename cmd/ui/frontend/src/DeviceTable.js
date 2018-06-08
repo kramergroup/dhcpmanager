@@ -12,6 +12,9 @@ import Websocket from 'react-websocket';
 const styles = {
   root: {
     marginTop: '16px'
+  },
+  tablehead: {
+    fontSize: '1em'
   }
 }
 
@@ -52,10 +55,10 @@ class DeviceTable extends Component {
           <Table className={classes.table}>
             <TableHead>
               <TableRow>
-                <TableCell>Hostname</TableCell>
-                <TableCell>IP</TableCell>
-                <TableCell>MAC</TableCell>
-                <TableCell>Expires</TableCell>
+                <TableCell className={classes.tablehead}>Hostname</TableCell>
+                <TableCell className={classes.tablehead}>IP</TableCell>
+                <TableCell className={classes.tablehead}>MAC</TableCell>
+                <TableCell className={classes.tablehead}>Expires</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
