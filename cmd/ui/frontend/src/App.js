@@ -60,7 +60,7 @@ class App extends Component {
 
   wsUrl(s) {
     var l = window.location;
-    if ( process.env.REACT_APP_ENDPOINT !== '') {
+    if (typeof process.env.REACT_APP_ENDPOINT !== 'undefined') {
       l = getLocation(process.env.REACT_APP_ENDPOINT);
     }
     return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + s;
@@ -68,10 +68,11 @@ class App extends Component {
 
   apiUrl(s) {
     var l = window.location;
-    if ( process.env.REACT_APP_ENDPOINT !== '') {
+    if (typeof process.env.REACT_APP_ENDPOINT !== 'undefined') {
       l = getLocation(process.env.REACT_APP_ENDPOINT);
     }
-    return l.protocol + "//" + l.host + l.pathname + s;
+    
+    return l + s;
   }
 
   handleAddClick = () => {
