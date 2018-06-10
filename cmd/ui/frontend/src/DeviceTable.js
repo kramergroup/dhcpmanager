@@ -48,10 +48,14 @@ class DeviceTable extends Component {
     var date = new Date(dateString);
     var seconds = Math.floor((new Date() - date) / 1000);
     var interval = Math.floor(seconds / 86400);
+    let options = {  
+      hour: "2-digit", minute: "2-digit"  
+    };  
+  
     if (interval > 1) {
-      return "+" + interval + " d " + date.getHours() + ":" + date.getMinutes();
+      return "+" + interval + " d " + date.toLocaleTimeString("en-gb", options);
     } else {
-      return date.getHours() + ":" + date.getMinutes();
+      return date.toLocaleTimeString("en-gb", options);
     }
 
   }

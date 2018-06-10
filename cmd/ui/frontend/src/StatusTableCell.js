@@ -18,9 +18,9 @@ class StatusTableCell extends React.Component {
 
     const { classes } = this.props;
 
-    var w = parseInt(this.props.size) + stroke;
-    var h = parseInt(this.props.size) + stroke;
-    var r = parseInt(this.props.size) / 2;
+    var w = parseInt(this.props.size,10) + stroke;
+    var h = parseInt(this.props.size,10) + stroke;
+    var r = parseInt(this.props.size,10) / 2;
     var c = colors[this.props.status];
 
     return (
