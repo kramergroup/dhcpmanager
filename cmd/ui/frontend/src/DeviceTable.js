@@ -8,6 +8,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import Websocket from 'react-websocket';
+import StatusTableCell from './StatusTableCell.js'
 
 const styles = {
   root: {
@@ -16,6 +17,7 @@ const styles = {
   tablehead: {
     fontSize: '1em'
   }
+  
 }
 
 class DeviceTable extends Component {
@@ -55,6 +57,7 @@ class DeviceTable extends Component {
           <Table className={classes.table}>
             <TableHead>
               <TableRow>
+                <TableCell className={classes.tablehead}></TableCell>
                 <TableCell className={classes.tablehead}>Hostname</TableCell>
                 <TableCell className={classes.tablehead}>IP</TableCell>
                 <TableCell className={classes.tablehead}>MAC</TableCell>
@@ -65,6 +68,7 @@ class DeviceTable extends Component {
               {this.state.data.map(n => {
                 return (
                   <TableRow key={n.id}>
+                    <StatusTableCell size='1em' status={n.Status}></StatusTableCell>
                     <TableCell component="th" scope="row">{n.Hostname}</TableCell> 
                     <TableCell>{n.Lease !== null ? n.Lease.FixedAddress : "n/a"}</TableCell>
                     <TableCell>{n.Interface.HardwareAddr}</TableCell>
