@@ -16,7 +16,15 @@ const styles = {
   },
   tablehead: {
     fontSize: '1em'
-  }
+  },
+  statuscol: {
+    width: '20px',
+    paddingRight: '4px',
+  },
+  namecol: {
+    fontSize: '1em',
+    paddingLeft: '8px',
+  },
   
 }
 
@@ -57,8 +65,8 @@ class DeviceTable extends Component {
           <Table className={classes.table}>
             <TableHead>
               <TableRow>
-                <TableCell className={classes.tablehead}></TableCell>
-                <TableCell className={classes.tablehead}>Hostname</TableCell>
+                <TableCell className={classes.statuscol}></TableCell>
+                <TableCell className={classes.namecol}>Hostname</TableCell>
                 <TableCell className={classes.tablehead}>IP</TableCell>
                 <TableCell className={classes.tablehead}>MAC</TableCell>
                 <TableCell className={classes.tablehead}>Expires</TableCell>
@@ -68,8 +76,8 @@ class DeviceTable extends Component {
               {this.state.data.map(n => {
                 return (
                   <TableRow key={n.id}>
-                    <StatusTableCell size='1em' status={n.Status}></StatusTableCell>
-                    <TableCell component="th" scope="row">{n.Hostname}</TableCell> 
+                    <StatusTableCell size='16' status={n.State} className={classes.statuscol}></StatusTableCell>
+                    <TableCell scope="row" className={classes.namecol}>{n.Hostname}</TableCell> 
                     <TableCell>{n.Lease !== null ? n.Lease.FixedAddress : "n/a"}</TableCell>
                     <TableCell>{n.Interface.HardwareAddr}</TableCell>
                     <TableCell>{n.Lease !== null ? this.formateTime(n.Lease.Expire) : "n/a"}</TableCell>
