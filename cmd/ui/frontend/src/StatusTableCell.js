@@ -25,7 +25,7 @@ class StatusTableCell extends React.Component {
 
     return (
       <TableCell className={this.props.className}>
-        <svg width={w} height={h} className={this.classes.icon}>
+        <svg width={w} height={h} className={classes.icon}>
             <circle cx={w/2} cy={h/2} r={r} stroke={c} fill='transparent' stroke-width={stroke}/>
         </svg> 
       </TableCell>
