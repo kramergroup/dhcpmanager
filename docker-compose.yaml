@@ -1,5 +1,26 @@
+# 
+# DHCPMANAGER - Development environment
+# 
+# Usage: docker-compose up|down|build
+#
+# This environment consists of 
+#  
+#   * an etcd key-value store,
+#   * a api server 
+#   * a production ui with integrated ui
+#   * a development ui accessing the production backend
+#
+# The development ui updates automatically if source files change, all
+# other container need to be rebuild to reflect code changes
+#
 version: '3'
+
+# The containers
 services:
+
+  # The key-value store is available at 
+  # http://etcd:2379
+  #
   etcd:
     image: "quay.io/coreos/etcd"
     command:
@@ -13,7 +34,11 @@ services:
       --listen-client-urls http://0.0.0.0:2379 
       --initial-cluster node1=http://$$(hostname -i):2380
       --listen-client-urls http://0.0.0.0:2379
-  ui:
+  
+  # The production ui and backend are available at
+  # http://backend:8080 and http://localhost:8080
+  #
+  backend:
     build: 
       context: .
       dockerfile: cmd/ui/Dockerfile
@@ -21,6 +46,26 @@ services:
     - etcd
     ports:
      - "8080:8080"
+  
+  # The development ui is available at 
+  # http://localhost:3000
+  #
+  ui:
+    image: node
+    working_dir: /ui
+    environment:
+    - REACT_APP_ENDPOINT=http://localhost:8080/
+    command: 
+    - npm 
+    - start
+    volumes:
+    - ./cmd/ui/frontend:/ui
+    ports:
+    - "3000:3000"
+  
+  # Controller maintains state - this is largely inactive in this enviroment
+  # because the container lacks privileges to create interfaces
+  # 
   controller:
     build: 
       context: .

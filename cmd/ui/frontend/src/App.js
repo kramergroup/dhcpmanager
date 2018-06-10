@@ -9,6 +9,7 @@ import blue from '@material-ui/core/colors/blue';
 import DeviceTable from './DeviceTable'
 import TopBar from './TopBar'
 import MacPlot from './MacPlot'
+import AddMACDialog from './AddMACDialog'
 
 import './App.css';
 
@@ -33,8 +34,6 @@ const styles = {
   }
 };
 
-const font = "'Lato', sans-serif"; 
-
 const theme = createMuiTheme({
   palette: {
     primary: blue,
@@ -44,14 +43,43 @@ const theme = createMuiTheme({
   },
 });
 
+var getLocation = function(href) {
+  var l = document.createElement("a");
+  l.href = href;
+  return l;
+};
+
 
 class App extends Component {
 
   title = "Network Interfaces"
 
-  url(s) {
+  state = {
+    showMACDialog: false,
+  }
+
+  wsUrl(s) {
     var l = window.location;
+    if ( process.env.REACT_APP_ENDPOINT !== '') {
+      l = getLocation(process.env.REACT_APP_ENDPOINT);
+    }
     return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + s;
+  }
+
+  apiUrl(s) {
+    var l = window.location;
+    if ( process.env.REACT_APP_ENDPOINT !== '') {
+      l = getLocation(process.env.REACT_APP_ENDPOINT);
+    }
+    return l.protocol + "//" + l.host + l.pathname + s;
+  }
+
+  handleAddClick = () => {
+    this.setState({showMACDialog: true});
+  }
+
+  closeMACDialog = () => {
+    this.setState({showMACDialog: false});
   }
 
   render() {
@@ -61,21 +89,25 @@ class App extends Component {
     return (
       <MuiThemeProvider theme={theme}>
       <div className={classes.root}>
-        <TopBar></TopBar>
+        <TopBar onAddClick={this.handleAddClick}></TopBar>
         <div className={classes.content}>
           <div className={classes.deviceTable}>
             <Typography variant="headline" component="h2">
              Allocations
             </Typography>
-            <DeviceTable endpoint={this.url("ws/allocations")}></DeviceTable>
+            <DeviceTable endpoint={this.wsUrl("ws/allocations")}></DeviceTable>
           </div>
           <div className={classes.macList}>
             <Typography variant="headline" component="h2">
               Device Address Pool
             </Typography>
-            <MacPlot endpoint={this.url("ws/macpool")} width="300" height="300"></MacPlot>
+            <MacPlot endpoint={this.wsUrl("ws/macpool")} width="300" height="300"></MacPlot>
           </div>
         </div>
+        <AddMACDialog open={this.state.showMACDialog} 
+                      onClose={this.closeMACDialog}
+                      endpoint={this.apiUrl("api/macs")}>
+        </AddMACDialog>
       </div>
       </MuiThemeProvider>
     );

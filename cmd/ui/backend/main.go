@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/kramergroup/dhcpmanager"
@@ -90,9 +91,13 @@ func main() {
 	router.HandleFunc("/api/macs", addMAC).Methods("POST")
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("/static/")))
 
+	// Configure CORS
+	corsOrigin := handlers.AllowedOrigins([]string{"*"})
+	corsMethod := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
+	corsHeader := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "Content-Length", "X-Requested-With"})
 	// Start http server
 	log.Printf("Start listening on port %d", config.Port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), router))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), handlers.CORS(corsMethod, corsOrigin, corsHeader)(router)))
 
 }
 
@@ -261,6 +266,8 @@ func pushMACPoolChange(w http.ResponseWriter, r *http.Request) {
 func addAllocation(w http.ResponseWriter, r *http.Request) {
 	data := AllocationRequest{}
 	err := json.NewDecoder(r.Body).Decode(&data)
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		res := Response{Status: "error", Info: err.Error()}
 		json.NewEncoder(w).Encode(res)
@@ -275,6 +282,8 @@ func addAllocation(w http.ResponseWriter, r *http.Request) {
 func addMAC(w http.ResponseWriter, r *http.Request) {
 	data := AddMACRequest{}
 	err := json.NewDecoder(r.Body).Decode(&data)
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		res := Response{Status: "error", Info: err.Error()}
 		json.NewEncoder(w).Encode(res)
